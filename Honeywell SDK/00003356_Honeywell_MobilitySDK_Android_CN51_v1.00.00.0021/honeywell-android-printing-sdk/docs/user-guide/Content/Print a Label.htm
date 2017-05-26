@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Create and Print a Label">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Print a Label</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1 class="Heading1">Print a Label</h1>
+        <p class="BodyText">The LabelPrinter class supports the writeLabel method for printing a label.</p><pre class="Codeblock" xml:space="preserve">public void writeLabel(String aFormat,<br />    LabelPrinter.VarDictionary aDictionary) throws LabelPrinterException</pre>
+        <p class="BodyText">The aFormat parameter specifies an identifier to locate a label definition in the printer settings specified in the constructor.</p>
+        <p class="BodyText">The aDictionary parameter specifies a collection of key-value pairs to provide data to the variables defined in the label definition. The key of a dictionary entry should specify the variable name (without prefix or postfix) and the value should specify the data that replaces the variable.</p>
+        <p class="BodyText">Using the commands and attributes described in <a href="Example Printer Commands and Attributes for Label Printing.htm">Example Printer Commands and Attributes for Label Printing</a>, you may specify "ItemLabel" in the aFormat parameter to print an item label. The LabelDataStream setting of the ItemLabel definition contains two variables, "ItemName$$" and "ItemNo$$". So you may create a LabelPrinter.VarDictionary object to provide data for these variables.</p>
+        <p class="BodyText">When you add a dictionary entry, the key name should specify the variable name without the prefix or postfix (for example, "ItemName"). The writeLabel method forms the complete variable name by adding a prefix or a postfix (or both) to the key name "ItemName". For the ItemLabel definition, it only specifies a postfix of "$$" so the complete variable name is "ItemName$$". When "ItemName$$" is found in the label data stream, writeLabel replaces the variable with the value specified for the "ItemName" key in the dictionary.</p>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Basic Steps for&#160;Printing a Receipt</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Basic Steps for&#160;Printing a Receipt</h1>
+        <p class="BodyText">In the Java Printing library, the LinePrinter class represents a mobile receipt printer and provides methods to communicate with the printer. To print a receipt, the application needs to perform the following steps:</p>
+        <ol>
+            <li value="1">Create an AsyncTask or a thread to invoke the printing API.</li>
+        </ol>
+        <p class="NoteIndent">Android OS displays the "Application Not Responding" (ANR) message if the application performs a lengthy operation (about 5 seconds) on the UI thread. While this occurs, the system cannot process incoming user input events. The printing API communicates with the printer through a network connection, which may invoke unpredictable delays that result in the ANR&#160;message.<br /><br />To prevent the ANR message, the LinePrinter constructors and methods must be called on a separate thread on the Android platform. The only exceptions are the methods that add or remove an event listener. Most LinePrinter methods throw a LinePrinterException if called from the UI thread.</p>
+        <ol data-mc-continue="true">
+            <li value="2"><a href="Create Printer Settings.htm">Create printer settings</a>.</li>
+            <li value="3"><a href="About the Constructors.htm">Create a LinePrinter object</a> with parameters to specify the printer and the communication method.</li>
+            <li value="4">(Optional) <a href="Register Event Listeners.htm">Add event listeners</a> to the LinePrinter object.</li>
+            <li value="5"><a href="Connect to the Printer.htm">Connect to the printer</a>.</li>
+            <li value="6"><a href="Generate a Receipt.htm">Generate a receipt</a>. You can repeat this step many times to print multiple receipts.</li>
+            <li value="7"><a href="Disconnect From the Printer and Release Resources.htm">Disconnect from the printer and release the resources</a> used by the LinePrinter object.</li>
+        </ol>
+        <h3>Sample Code</h3>
+        <p class="BodyText">This code snippet demonstrates the steps described in the previous section. The Honeywell Mobility Android Printing SDK also includes a sample application called LinePrinterSample.</p><pre class="Codeblock" xml:space="preserve">import com.honeywell.mobility.print.*;
+import android.os.AsyncTask;
+import android.app.Activity;
+
+public class PrintActivity extends Activity {
+
+    private void createPrintTask()
+    {
+        PrintTask task = new PrintTask();
+    
+        // Executes PrintTask with the specified parameters which will
+        // be passed to the PrintTask.doInBackground method. In this
+        // case, the doInBackgroud method does not expect any parameter.
+        task.execute();
+    }
+
+    class PrintTask extends AsyncTask&lt;Void, Integer, Void&gt;
+    {
+        /**
+        * This method runs on a background thread. The specified parameters
+        * are the parameters passed to the execute method by the caller of
+        * this task. This method can call publishProgress to publish updates
+        * on the UI thread.
+        */
+        @Override
+        protected Void doInBackground(Void... args)
+        {
+            doPrint();
+            return null;
+        }
+
+        /**
+        * Runs on the UI thread after publishProgress is invoked. The
+        * specified values are the values passed to publishProgress.
+        */
+        @Override
+        protected void onProgressUpdate(Integer... values)
+        {
+            // Access the values array.
+            int progress = values[0];
+
+            switch (progress)
+            {
+            case PrintProgressEvent.MessageTypes.CANCEL:
+                // You may display "Printing cancelled".
+                break;
+            case PrintProgressEvent.MessageTypes.COMPLETE:
+                // You may display "Printing completed".
+                break;
+            case PrintProgressEvent.MessageTypes.ENDDOC:
+                // You may display "End of document".
+                break;
+            case PrintProgressEvent.MessageTypes.FINISHED:
+                // You may display "Printer connection closed".
+                break;
+            case PrintProgressEvent.MessageTypes.STARTDOC:
+                // You may display "Start printing document".
+                break;
+            default:
+                // You may display "Unknown progress message" or do nothing.
+                break;
+            }
+        }
+
+        private void doPrint()
+        {
+            LinePrinter.ExtraSettings exSettings = new LinePrinter.ExtraSettings();
+            exSettings.setContext(PrintActivity.this);
+
+            try
+            {
+                // Creates a LinePrinter object with the specified
+                // parameters. The URI string "bt://00:02:5B:00:02:78"
+                // specifies to connect to the printer via Bluetooth
+                // and the Bluetooth MAC address.
+
+
+                File profiles = new File (getExternalFilesDir(null), "printer_profiles.JSON");
+                LinePrinter  lp = new LinePrinter(profiles.getAbsolutePath(), "PR2",           
+                "bt://00:02:5B:00:02:78", exSettings);
+
+                lp.addPrintProgressListener(new PrintProgressListener() {
+                     public void receivedStatus(PrintProgressEvent aEvent)
+                     {
+                         // Publishes updates on the UI thread.
+                         publishProgress(aEvent.getMessageType());
+                     }
+                });
+
+                lp.connect();  // Connects to the printer
+
+                lp.setBold(true);   // Sets bold font.
+                lp.write("SALES ORDER");
+                lp.setBold(false);  // Returns to normal font.
+                lp.newLine(2);
+                lp.write(" PRD. DESCRIPT.   PRC.  QTY.    NET.");
+                lp.newLine(2);
+                lp.writeLine(" 1501 Timer-Md1  13.15     1   13.15");
+                lp.writeLine(" 1502 Timer-Md2  13.15     3   39.45");
+                lp.writeLine(" 1503 Timer-Md3  13.15     1   13.15");
+                lp.writeLine(" 1504 Timer-Md4  13.15     4   52.60");
+                lp.writeLine(" 1505 Timer-Md5  13.15     5   65.75");
+                lp.writeLine("                        ----  ------");
+                lp.write("                  SUBTOTAL    15  197.25");
+                lp.newLine(2);
+
+                lp.writeLine("                        ----  ------");
+                lp.write("               TOTAL SALES    15  197.15");
+                lp.newLine(4);
+
+            }
+            catch (LinePrinterException ex)
+            {
+                 // Handles LinePrinter exceptions
+            }
+            catch (Exception ex)
+            {
+                 // Handles other exceptions
+            }
+            finally
+            {
+                if (lp != null)
+                {
+                    try
+                    {
+                        lp.disconnect();  // Disconnects from the printer
+                        lp.close();  // Releases resources
+                    }
+                    catch (Exception ex) {}
+                }
+            }
+        }
+    }
+}</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Create and Print a Label">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Create Label Definitions</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Create Label Definitions</h1>
+        <p class="BodyText">The Printing Java API supports label printing through a string of printer commands or by invoking a stored format on the printer. The label definitions are defined in groups in the LABELS member of the printer commands and attributes LINEPRINTERCONTROL JSON object. Each label group is an object whose name identifies the group.</p>
+        <p class="BodyText">The following example is extracted from the standard printer_profiles.JSON file provided by the Honeywell Mobility Android Printing SDK. The LABELS object contains two groups, 2in_FingerprintLabels and 3in_FingerprintLabels. Each group contains two label definition objects, ItemLabel and URL_QRLabel.</p><pre class="Codeblock" xml:space="preserve">    "LABELS":<br />    {<br />        "2in_FingerprintLabels":<br />        {<br />            "ItemLabel":<br />            {<br />                "LabelDataStream": "DIR 4:AN 7:PP 30, 120:FT \"Swiss 721 Bold Condensed BT\",16:PT 
+\"ItemName$$\":PP 120,75:BARSET \"CODE128\",3,1,4,150:PB \"ItemNo$$\":PP 280, 260:FT \"Letter 
+Gothic 12 Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />                "VarPostfix": "$$"<br />            },
+<br />            "URL_QRLabel":<br />            {<br />                "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 100, 20:FT 
+\"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 200, 20:FT \"Letter Gothic 12 Pitch BT\",14:PT VAR2$:PP 
+70,450:BARSET \"QRCODE\",1,1,8,2,2:PB VAR3$\r\nLAYOUT END\r\nINPUT OFF\r\n",<br />                "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT ON\r\nLAYOUT RUN 
+\"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT OFF\r\n",<br />                "VarPrefix": "q",<br />                "VarPostfix": "$"<br />            }<br />        },<br />    
+        "3in_FingerprintLabels":<br />        {<br />            "ItemLabel":<br />            {<br />                "LabelDataStream": "DIR 4:AN 7:PP 40, 180:FT \"Swiss 721 Bold Condensed BT\",20:PT 
+\"ItemName$$\":PP 150,180:BARSET \"CODE128\",3,1,4,240:PB \"ItemNo$$\":PP 400, 330:FT \"Letter Gothic 
+12 Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />                "VarPostfix": "$$"<br />            },
+
+            "URL_QRLabel":<br />            {<br />                "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 200, 
+50:FT \"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 300, 50:FT \"Letter Gothic 12 Pitch 
+BT\",14:PT VAR2$:PP 105,490:BARSET \"QRCODE\",1,1,13,2,2:PB VAR3$\r\nLAYOUT END\r\nINPUT OFF\r\n",<br />                "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT ON\r\nLAYOUT RUN 
+\"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT OFF\r\n",<br />                "VarPrefix": "q",<br />                "VarPostfix": "$"<br />            }<br />        }<br />    }</pre>
+        <h2>Member Definitions</h2>
+        <p class="BodyText">The label definition object may include one or more of the following members:</p>
+        <ul>
+            <li value="1">LabelDataStream – A string containing printer language specific commands to print the label. The data stream may contain variables with the prefix and postfix defined in the VarPrefix and VarPostfix members. The prefix and postfix are used to distinguish the variables from other commands or text in the data stream. For example, "ItemName$$" in the LabelDataStream setting of the ItemLabel definition above contains a variable name of "ItemName" and postfix "$$". Please refer to <a href="Print a Label.htm">Print a Label</a> to see how to provide data for the variables.</li>
+            <li value="2">StoreFormat – A string containing printer language specific commands to store the label layout format on the printer. The layout format may contain variables which must be specified in the syntax supported by the printer language. If this member is present, this method always sends the StoreFormat commands followed by the InvokeFormat commands to the printer.</li>
+        </ul>
+        <p class="NoteIndent">If you would like to control when to send the commands to store the label format on the printer, you may define a member containing custom commands in the printer settings object and use the sendCustomCommand to send the commands instead of using StoreFormat.</p>
+        <ul>
+            <li value="1">InvokeFormat – A string containing printer language-specific commands to invoke a label layout format stored on the printer to print the label. If the layout format contains variables, the InvokeFormat string must also specify the commands to substitute the variables.</li>
+        </ul>
+        <p class="NoteIndent">The data for the variables is provided by LabelPrinter.writeLabel method. Therefore, the InvokeFormat string needs to specify variables in place of the data, using the same variable format as described for LabelDataStream.</p>
+        <ul>
+            <li value="1">VarPrefix – A string containing the variable name prefix. If this member is not present, the prefix  defaults to an empty string.</li>
+            <li value="2">VarPostfix – A string containing the variable name postfix. If this member is not present, the postfix defaults to an empty string.</li>
+        </ul>
+        <p class="BodyText">Each label definition object needs to contain either a LabelDataStream member or an InvokeFormat member. If both members are specified, only the LabelDataStream member is used.</p>
+        <p class="BodyText">The label related settings were designed so that you may print similar labels for different printers without changing the printing code. In the previous example, the 2in_FingerprintLabels and 3in_FingerprintLabels groups contain the same member names, "ItemLabel" and "URL_QRLabel". One set of labels were designed for 2" printers and the other for 3" printers. The label formats between the 2" and 3" printers are similar except for the positions and sizes of the bar code and text fields.</p>
+        <p class="BodyText">You may use the LABEL_x member to include a label group to the printer settings object, where x is a number to make the member name unique. The next example shows two printer settings objects including 2in_FingerprintLabels and 3in_FingerprintLabels respectively. The application can specify "ItemLabel" or "URL_QRLabel" in the aFormat parameter of the LabelPrinter.writeLabel method regardless of the printer. If a LabelPrinter object was created for PB22_Fingerprint, the object prints the 2" label. If a LabelPrinter object was created for PB32_Fingerprint, the object prints the 3" label.</p><pre class="Codeblock" xml:space="preserve">    "PRINTERS":<br />    {<br />        "PB22_Fingerprint":<br />        {<br />            "DisplayName":"PB22 Bt Label Printer", "PrintHeadWidth": 384, 
+            "LABEL_01": "2in_FingerprintLabels",<br />            "FormFeed": "[0x46,0x4F,0x52,0x4D,0x46,0x45,0x45,0x44]",<br />            "Initialize": [], "NormalFont": [], "NullsBeforeClose": 0<br />        },
+<br />        "PB32_Fingerprint":<br />        {<br />            "DisplayName":"PB32 Bt Label Printer", "PrintHeadWidth": 576, 
+            "LABEL_01": "3in_FingerprintLabels",<br />            "FormFeed": "[0x46,0x4F,0x52,0x4D,0x46,0x45,0x45,0x44]",<br />            "Initialize": [], "NormalFont": [], "NullsBeforeClose": 0<br />        }<br />    }</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

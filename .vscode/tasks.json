@@ -1,0 +1,49 @@
+{
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "Compile debug",
+            "isTestCommand": true,
+            "command": "gradlew.bat",
+            "isShellCommand": true,
+            "args": [
+                "assembleDebug"
+            ],
+            "showOutput": "always"
+        },
+        {
+            "taskName": "Install APK",
+            "command": "adb",
+            "isShellCommand": true,
+            "args": [
+                "-d",
+                "install",
+                "${workspaceRoot}/app/build/outputs/apk/app-debug.apk"
+            ],
+            "showOutput": "always"
+        },
+        {
+            "taskName": "Replace APK",
+            "command": "adb",
+            "isShellCommand": true,
+            "args": [
+                "-d",
+                "install",
+                "-r",
+                "${workspaceRoot}/app/build/outputs/apk/app-debug.apk"
+            ],
+            "showOutput": "always"
+        },
+        {
+            "taskName": "Start logcat",
+            "command": "adb",
+            "isShellCommand": true,
+            "args": [
+                "logcat",
+                "| grep -i echo.rootstock"
+            ],
+            "showOutput": "always"
+        }
+
+    ]    
+}

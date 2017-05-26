@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Query Printer Status</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Query Printer Status</h1>
+        <p class="BodyText">You may check the printer status before printing. If the returned status indicate one or more error conditions, you may prompt the user to correct the errors. The LabelPrinter and LinePrinter classes inherit the getStatus method from its parent class.</p>
+        <p class="CodeSingleLine">public int[] getStatus() throws PrinterException</p>
+        <p class="BodyText">To use this method, you must define the query command to send to the printer and the patterns to search in the printer response. Each pattern is associated with a message number. When a matching pattern is found, its message number is returned in the integer array. The returned value of the getStatus method is an array because it may hold multiple message numbers if multiple errors were detected.</p>
+        <p class="BodyText">The standard printer_profiles.JSON file provided by the Honeywell Mobility Android Printing SDK contains predefined entries for ESC/P status queries. Please refer to the Command and Attribute Format &gt; Printer Status Commands and Attributes section of the <a href="../../prt-cmds-attribs-guide/Default.htm">Printer Commands and Attributes User Guide</a> for more information.</p>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Create and Print a Label|Print a Label">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Example&#160;Printer Commands and Attributes for Label Printing</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1 class="Heading1">Example&#160;Printer Commands and Attributes for Label Printing</h1><pre class="Codeblock" xml:space="preserve">{<br />    "LINEPRINTERCONTROL":<br />    {<br />        "FormatVersion": "1.0.0.0",<br />        "Platform": "Android",<br />        "DEFAULTS":<br />        {<br />            "BoldIsFont": true, "BoldOff": "[0x1b,0x77,!]", "BoldOn": "[0x1b,0x77,0x6D]",<br />            "CompressDotsHigh": 12, "CompressIsFont": true, "CompressOff": "[0x1b,0x77,!]",<br />            "CompressOn": "[0x1b,0x77,0x42]", "DoubleHighDotsHigh": 32, "DoubleHighIsFont": false,<br />            "DoubleHighMask": 16, "DoubleHighOff": "[0x1b,!,0x10]", "DoubleHighOn": "[0x1b,!,0x10]",<br />            "DoubleWideDotsHigh": 16, "DoubleWideHighPrefix": "[0x1b,!]", "DoubleWideIsFont": false,<br />            "DoubleWideMask": 32, "DoubleWideOff": "[0x1b,!,0x20]", "DoubleWideOn": "[0x1b,!,0x20]",<br />            "Initialize": "[0x00,0x00,0x00,0x00,0x1b,0x40,0x00,0x00,0x00]",<br />            "NormalFont": "[0x1b,0x77,!,0x1b,!,0x00]", "NewLine": "[0x0d]", "NormalDotsHigh": 16,<br />            "FormFeed": "[0x0d,0x0d,0x0d,0x0d,0x0d]", "ValidateAttribOnFormFeed": true,<br />            "PrintHeadWidth": 384, "UseDoubleHWMask": true, "ValidateAttribOnFont": true,<br />            "ValidateAttribOnNewLn": true, "NullsBeforeClose": 0, "PreCloseDelay": 0, 
+            "EndOfGraphicsDelay": 0, "PostGraphicsDelay": 0, "PostGraphicsLineDelay": 0, 
+            "PreGraphicsDelay": 0, "StartOfGraphicsDelay": 0, "BtConnectRetries" : 3, 
+            "BtconnectRetryDelay" : 100, "BtWriteDataReadyTimeout" : 10000, 
+            "BtWriteIntervalTimeout" : 10000, "BtMaxSegWrite" : 1024, "BtLinger" : 10<br />        },
+<br />        "PRINTERS":<br />        {<br />            "PB22_Fingerprint":<br />            {<br />                "DisplayName":"PB22 Bt Label Printer", "PrintHeadWidth": 384, "LABEL_01": "2in_FingerprintLabels",
+                "FormFeed": "[0x46,0x4F,0x52,0x4D,0x46,0x45,0x45,0x44]",<br />                "Initialize": [], "NormalFont": [], "NullsBeforeClose": 0, "PreCloseDelay": 1000<br />            },
+
+            "PB32_Fingerprint":<br />            {<br />                "DisplayName":"PB32 Bt Label Printer", "PrintHeadWidth": 576, "LABEL_01": "3in_FingerprintLabels",<br />                "FormFeed": "[0x46,0x4F,0x52,0x4D,0x46,0x45,0x45,0x44]",<br />                "Initialize": [], "NormalFont": [], "NullsBeforeClose": 0, "PreCloseDelay": 1000<br />            }<br />        },
+
+        "LABELS":<br />        {<br />            "2in_FingerprintLabels":<br />            {<br />                "ItemLabel":<br />                {<br />                    "LabelDataStream": "DIR 4:AN 7:PP 30, 120:FT \"Swiss 721 Bold Condensed BT\",16:PT 
+\"ItemName$$\":PP 120,75:BARSET \"CODE128\",3,1,4,150:PB \"ItemNo$$\":PP 280, 260:FT \"Letter Gothic 12 
+Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />                    "VarPostfix": "$$"<br />                },
+<br />                "URL_QRLabel":<br />                {<br />                    "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 100, 20:FT 
+\"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 200, 20:FT \"Letter Gothic 12 Pitch BT\",14:PT VAR2$:PP 70,
+450:BARSET \"QRCODE\",1,1,8,2,2:PB VAR3$\r\nLAYOUT END\r\nINPUT OFF\r\n",<br />                    "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT ON\r\nLAYOUT RUN 
+\"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT OFF\r\n",<br />                    "VarPrefix": "q",<br />                    "VarPostfix": "$"<br />                }<br />            },
+<br />            "3in_FingerprintLabels":<br />            {<br />                "ItemLabel":<br />                {<br />                    "LabelDataStream": "DIR 4:AN 7:PP 40, 180:FT \"Swiss 721 Bold Condensed BT\",20:PT 
+\"ItemName$$\":PP 150,180:BARSET \"CODE128\",3,1,4,240:PB \"ItemNo$$\":PP 400, 330:FT \"Letter Gothic 12 
+Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />                    "VarPostfix": "$$"<br />                },
+<br />                "URL_QRLabel":<br />                {<br />                    "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 200, 
+50:FT \"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 300, 50:FT \"Letter Gothic 12 Pitch BT\",14:PT 
+VAR2$:PP 105,490:BARSET \"QRCODE\",1,1,13,2,2:PB VAR3$\r\nLAYOUT END\r\nINPUT OFF\r\n",<br />                    "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT ON\r\nLAYOUT RUN 
+\"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT OFF\r\n",<br />                    "VarPrefix": "q",<br />                    "VarPostfix": "$"<br />                }<br />            }<br />        }<br />    }<br />}</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

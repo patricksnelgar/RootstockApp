@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Create and Print a Label|Print a Label">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Example&#160;2: Save and Invoke a Stored Label Format on the Printer</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/TableStyles/TableBasic.css" rel="stylesheet" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h2>Example&#160;2: Save and Invoke a Stored Label Format on the Printer</h2>
+        <p class="BodyText">Print the URL_QRLabel defined in the <a href="Example Printer Commands and Attributes for Label Printing.htm">Example Printer Commands and Attributes for Label Printing</a> to a PB32 printer. It uses the PB32_Fingerprint printer settings which include the 3in_FingerprintLabels label group. The following code snippet shows the URL_QRLabel definition in this group:</p><pre class="Codeblock" xml:space="preserve">    "URL_QRLabel":<br />    {<br />        "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 200, 
+50:FT \"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 300, 50:FT \"Letter Gothic 12 Pitch BT\",14:PT 
+VAR2$:PP 105,490:BARSET \"QRCODE\",1,1,13,2,2:PB VAR3$\r\nLAYOUT END\r\nINPUT OFF\r\n",<br />        "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT ON\r\nLAYOUT RUN 
+\"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT OFF\r\n",<br />        "VarPrefix": "q",<br />        "VarPostfix": "$"<br />    }</pre>
+        <p class="BodyText">This label definition object contains both the StoreFormat and the InvokeFormat members. The StoreFormat specifies the commands to store a label layout format on the printer. The InvokeFormat specifies the commands to invoke a label layout format stored on the printer. The StoreFormat commands will be sent to the printer followed by the InvokeFormat commands.</p>
+        <p class="BodyText">See the <a href="http://epsfiles.intermec.com/eps_files/eps_man/937-005.zip" target="_blank">Fingerprint Command Reference Manual</a> (P/N 937-005-00x) for complete command information.</p>
+        <h3>StoreFormat&#160;Command Descriptions</h3>
+        <table class="TableStyle-TableBasic" style="mc-table-style: url('Resources/TableStyles/TableBasic.css');" cellspacing="0">
+            <col class="Column-Column1" style="width: 316px;" />
+            <col class="Column-Column1" />
+            <thead>
+                <tr class="Head-Header1">
+                    <th class="HeadE-Column1-Header1">Fingerprint or Direct Protocol Command</th>
+                    <th class="HeadD-Column1-Header1">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">INPUT&#160;ON</td>
+                    <td class="BodyD-Column1-Body1">Enables the Direct Protocol in order to invoke the LAYOUT&#160;INPUT&#160;and&#160;LAYOUT&#160;END commands.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">LAYOUT&#160;INPUT "URLQRLABEL.LAY"</td>
+                    <td class="BodyD-Column1-Body1">Starts the recording of a layout description which will be saved as "URLQRLABEL.LAY" in the printer memory.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">DIR 4</td>
+                    <td class="BodyD-Column1-Body1">Specifies a direction to print the label.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">AN 7</td>
+                    <td class="BodyD-Column1-Body1">Specifies the anchor point.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP&#160;200, 50</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (200, 50).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">FT "Swiss 721 Bold Condensed BT", 16</td>
+                    <td class="BodyD-Column1-Body1">Uses "Swiss 721 Bold Condensed BT" font and a height of 16 pts.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PT&#160;VAR1$</td>
+                    <td class="BodyD-Column1-Body1">Provides inout data for a text field. VAR1$ specifies a variable data field that will be substituted with the data provided via the LAYOUT&#160;RUN command.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP 300,50</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (300,50).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">FT "Letter Gothic 12&#160;Pitch BT", 14</td>
+                    <td class="BodyD-Column1-Body1">Uses "Letter Gothic 12 Pitch BT" font and a height of 14 pts.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PT&#160;VAR2$</td>
+                    <td class="BodyD-Column1-Body1">Provides input data for a text field. VAR2$&#160;specifies a variable data field that will be substituted with the data provided by the LAYOUT&#160;RUN&#160;command.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP 105, 490</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (105, 490).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">BARSET "QRCODE",1,1,13,2,2</td>
+                    <td class="BodyD-Column1-Body1">Specifies the QR&#160;Code parameters.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PB&#160;VAR3$</td>
+                    <td class="BodyD-Column1-Body1">Provides input data for a bar code. VAR3$ specifies a variable data field that will be substituted with the data provided by the LAYOUT&#160;RUN&#160;command.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">LAYOUT&#160;END</td>
+                    <td class="BodyD-Column1-Body1">Stops the recording of a layout description and saves the layout.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyB-Column1-Body1">INPUT&#160;OFF</td>
+                    <td class="BodyA-Column1-Body1">Disables the Direct Protocol.</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>InvokeFormat Command&#160;Descriptions</h3>
+        <table class="TableStyle-TableBasic" style="mc-table-style: url('Resources/TableStyles/TableBasic.css');" cellspacing="0">
+            <col class="Column-Column1" style="width: 349px;" />
+            <col class="Column-Column1" />
+            <thead>
+                <tr class="Head-Header1">
+                    <th class="HeadE-Column1-Header1">Fingerprint or Direct Protocol Command</th>
+                    <th class="HeadD-Column1-Header1">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">INPUT&#160;OFF</td>
+                    <td class="BodyD-Column1-Body1">Disables the Direct Protocol in order to invoke the FORMAT&#160;INPUT&#160;command.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">FORMAT&#160;INPUT "#", "@", "|"</td>
+                    <td class="BodyD-Column1-Body1">Specifies separators for the LAYOUT&#160;RUN&#160;command. In this case, "#" is the start of data separator, "@" is the end of data separator, and "|" is the data field separator.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">INPUT&#160;ON</td>
+                    <td class="BodyD-Column1-Body1">Enables the Direct Protocol in order to invoke the LAYOUT&#160;RUN&#160;command.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">LAYOUT&#160;RUN "URLQRLABEL.LAY"</td>
+                    <td class="BodyD-Column1-Body1">Provides variable input data to a predefined layout, "URLQRLABEL.LAY" in this example.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">#qTextLine1$|#qTextLine2$|#qURL$|@</td>
+                    <td class="BodyD-Column1-Body1">Specifies three variables: qTextLine1$, qTextLine2$, and qURL$ which will be replaced by the "TextLIne1", "TextLine2", and "URL" key values specified in the aDictionary parameter passed to the LabelPrinter.writeLabel method.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PF</td>
+                    <td class="BodyD-Column1-Body1">Prints the label.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyB-Column1-Body1">INPUT&#160;OFF</td>
+                    <td class="BodyA-Column1-Body1">Disables the Direct Protocol.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="BodyText">The following code snippet prints the label:</p><pre class="Codeblock" xml:space="preserve">import android.os.AsyncTask;<br />import android.app.Activity;
+import com.honeywell.mobility.print.*;<br /><br />public class PrintActivity extends Activity<br />{
+<br />    private void createPrintTask()<br />    {<br />        PrintTask task = new PrintTask();
+<br />        // Executes PrintTask with the specified parameters which<br />        // will be passed to the PrintTask.doInBackground method.<br />        // In this case, the doInBackground method does not expect<br />        // any parameter.<br />        task.execute();<br />    }
+<br />    class PrintTask extends AsyncTask&lt;Void, Integer, Void&gt;<br />    {<br />        @Override<br />        protected Void doInBackground(Void... args)<br />        {<br />            doPrint();<br />            return null;<br />        }
+<br />        private void doPrint()<br />        {<br />            LabelPrinter lp = null;<br />            LabelPrinter.ExtraSettings exSettings =<br />                new LabelPrinter.ExtraSettings();<br />            exSettings.setContext(PrintActivity.this);
+<br />            try<br />            {<br />                // Assumes the printer_profiles.JSON contains the<br />                // contents of the LINEPRINTERCONTROL JSON object<br />                // in the Example Printer Commands and Attributes<br />                // for Label Printing section. It also assumes the<br />                // file has been copied to the external storage.<br />                File profiles = new File (getExternalFilesDir(null),<br />                    "printer_profiles.JSON");<br />                lp = new LabelPrinter(profiles.getAbsolutePath(),<br />                    "PB32_Fingerprint",<br />                    "bt://00:02:5B:CF:B3:20",<br />                    exSettings);<br />                lp.connect();  // Connects to the printer<br />                // Sets up the variable dictionary.<br />                LabelPrinter.VarDictionary varDataDict =<br />                    new LabelPrinter.VarDictionary();<br />                varDataDict.put("TextLine1", "Scan for more info");<br />                varDataDict.put("TextLine2", "www.honeywellaidc.com");<br />                varDataDict.put("URL", "http://www.honeywellaidc.com");
+<br />                // Prints the URL_QRLabel as defined in the<br />                // printer_profiles.JSON file.<br />                lp.writeLabel("URL_QRLabel", varDataDict);
+<br />                // You may print more labels.<br />            }<br />            catch (LabelPrinterException ex)<br />            {<br />                // Handles LabelPrinter exceptions<br />            }<br />            catch (Exception ex)<br />            {<br />                // Handles other exceptions<br />            }<br />            finally<br />            {<br />                if (lp != null)<br />                {<br />                    try<br />                    {<br />                        // Note: The PB32_Fingerprint printer settings<br />                        // specify a PreCloseDelay setting to ensure the<br />                        // label data stream is transmitted to the<br />                        // printer before the connection is closed.<br />                        lp.disconnect();  // Disconnects from the printer<br />                        lp.close();  // Releases resources<br />                    }<br />                    catch (Exception ex) {}<br />                }<br />            }<br />        }<br />    }<br />}</pre>
+        <p class="BodyText">When the above lp.writeLabel method is executed, the following printer commands are sent to the printer after variable replacements:</p><pre class="Codeblock" xml:space="preserve">INPUT ON<br />LAYOUT INPUT "URLQRLABEL.LAY"<br />DIR 4<br />AN 7<br />PP 200, 50<br />FT "Swiss 721 Bold Condensed BT",16<br />PT VAR1$<br />PP 300,50<br />FT "Letter Gothic 12 Pitch BT",14<br />PT VAR2$<br />PP 105,490<br />BARSET "QRCODE",1,1,13,2,2<br />PB VAR3$<br />LAYOUT END<br />INPUT OFF<br />INPUT OFF<br />FORMAT INPUT "#","@","|"<br />INPUT ON<br />LAYOUT RUN "URLQRLABEL.LAY"<br />#Scan for more info|www.honeywellaidc.com|http://www.honeywellaidc.com|@<br />PF<br />INPUT OFF</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

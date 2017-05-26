@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Create and Print a Label|Print a Label">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Example&#160;1: Send the Label Data Stream to the Printer</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/TableStyles/TableBasic.css" rel="stylesheet" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h2>Example&#160;1: Send the Label Data Stream to the Printer</h2>
+        <p class="BodyText">Print the ItemLabel defined in the <a href="Example Printer Commands and Attributes for Label Printing.htm">Example Printer Commands and Attributes for Label Printing</a> to a PB32 printer. The label uses the PB32_Fingerprint printer settings which include the 3in_FingerprintLabels label group. The label group is defined by ItemLabel as follows:</p><pre class="Codeblock" xml:space="preserve">"ItemLabel":<br />{<br />    "LabelDataStream": "DIR 4:AN 7:PP 40, 180:FT \"Swiss 721 Bold Condensed BT\",20:PT 
+\"ItemName$$\":PP 150,180:BARSET \"CODE128\",3,1,4,240:PB \"ItemNo$$\":PP 400, 330:FT 
+\"Letter Gothic 12 Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />    "VarPostfix": "$$"<br />}</pre>
+        <p class="BodyText">This label definition specifies a data stream in Fingerprint commands to print the label. See the <a href="http://epsfiles.intermec.com/eps_files/eps_man/937-005.zip" target="_blank">Fingerprint Command Reference Manual</a> (P/N 937-005-00x) for complete command information.</p>
+        <p class="BodyText">The next table explains the Fingerprint commands specified in the LabelDataStream setting.</p>
+        <table class="TableStyle-TableBasic" style="mc-table-style: url('Resources/TableStyles/TableBasic.css');" cellspacing="0">
+            <col class="Column-Column1" />
+            <col class="Column-Column1" />
+            <thead>
+                <tr class="Head-Header1">
+                    <th class="HeadE-Column1-Header1">Fingerprint Command</th>
+                    <th class="HeadD-Column1-Header1">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">DIR 4</td>
+                    <td class="BodyD-Column1-Body1">Specifies a direction to print the label.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">AN 7</td>
+                    <td class="BodyD-Column1-Body1">Specifies the anchor point.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP 40, 180</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (40, 180).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">FT "Swiss 721 Bold Condensed BT",20</td>
+                    <td class="BodyD-Column1-Body1">Uses "Swiss 721 Bold Condensed BT" font with a height of 20 pts.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PT "ItemName$$"</td>
+                    <td class="BodyD-Column1-Body1">Provides input data for a text field. ItemName$$ specifies a variable name "ItemName" with a postfix of "$$". This variable is replaced by the "ItemName" key value in the aDictionary parameter passed to the LabelPrinter.writeLabel method.
+Note that ItemName$$ is not Fingerprint variable syntax. The double quotes around it are required for a text string.
+</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP 150,180</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (150, 180).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">BARSET "CODE128",3,1,4,240</td>
+                    <td class="BodyD-Column1-Body1">Specifies the Code 128 parameters.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PB&#160;"ItemNo$$"</td>
+                    <td class="BodyD-Column1-Body1">Provides input data for a bar code. ItemNo$$ specifies a variable name "ItemNo" with a postfix of "$$". This variable is replaced by the "ItemNo" key value in the dictionary parameter passed to this method.
+Note that ItemNo$$ is not Fingerprint variable syntax. The double quotes around it are required for a text string.
+</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PP 400, 330</td>
+                    <td class="BodyD-Column1-Body1">Sets the insertion point to (400, 330).</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">FT&#160;"Letter Gothic 12 Pitch BT",14</td>
+                    <td class="BodyD-Column1-Body1">Uses "Letter&#160;Gothic 12 Pitch BT" font with a height of 14 pts.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">PT "ItemNoSS"</td>
+                    <td class="BodyD-Column1-Body1">Provides input data for a text field. See the description of "ItemNo$$" for an explanation of the variable substitution.</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyB-Column1-Body1">PF</td>
+                    <td class="BodyA-Column1-Body1">Prints the label.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="BodyText">&#160;</p>
+        <p class="BodyText">The following code snippet prints the label:</p><pre class="Codeblock" xml:space="preserve">import android.os.AsyncTask;<br />import android.app.Activity;
+import com.honeywell.mobility.print.*;<br /><br />public class PrintActivity extends Activity<br />{
+<br />    private void createPrintTask()<br />    {<br />        PrintTask task = new PrintTask();
+<br />        // Executes PrintTask with the specified parameters which
+        // will be passed to the PrintTask.doInBackground method.<br />        // In this case, the doInBackground method does not expect<br />        // any parameter.<br />        task.execute();<br />    }
+<br />    class PrintTask extends AsyncTask&lt;Void, Integer, Void&gt;<br />    {
+<br />        @Override<br />        protected Void doInBackground(Void... args)<br />        {<br />            doPrint();<br />            return null;<br />        }
+<br />        private void doPrint()<br />        {<br />            LabelPrinter lp = null;<br />            LabelPrinter.ExtraSettings exSettings =<br />                new LabelPrinter.ExtraSettings();<br />            exSettings.setContext(PrintActivity.this);
+<br />            try<br />            {<br />                // Assumes the printer_profiles.JSON contains the<br />                // contents of the LINEPRINTERCONTROL JSON object<br />                // in the Example Printer Commands and Attributes<br />                // for Label Printing section. It also assumes the<br />                // file has been copied to the external storage.<br />                File profiles = new File (getExternalFilesDir(null),
+                    "printer_profiles.JSON");<br />                lp = new LabelPrinter(profiles.getAbsolutePath(),<br />                    "PB32_Fingerprint",<br />                    "bt://00:02:5B:CF:B3:20",<br />                    exSettings);
+<br />                lp.connect();  // Connects to the printer
+<br />                // Sets up the variable dictionary.<br />                LabelPrinter.VarDictionary varDataDict =<br />                    new LabelPrinter.VarDictionary();<br />                varDataDict.put("ItemName", "Honeywell AirGenius 4");<br />                varDataDict.put("ItemNo", "92926003104");
+<br />                // Prints the ItemLabel as defined in the<br />                // printer_profiles.JSON file.<br />                lp.writeLabel("ItemLabel", varDataDict);
+<br />                // You may print more labels.<br />            }<br />            catch (LabelPrinterException ex)<br />            {<br />                // Handles LabelPrinter exceptions<br />            }<br />            catch (Exception ex)<br />            {<br />                // Handles other exceptions<br />            }<br />            finally<br />            {<br />                if (lp != null)<br />                {<br />                    try<br />                    {<br />                        // Note: The PB32_Fingerprint printer settings<br />                        // specify a PreCloseDelay setting to ensure the<br />                        // label data stream is transmitted to the<br />                        // printer before the connection is closed.<br />                        lp.disconnect();  // Disconnects from the printer<br />                        lp.close();  // Releases resources<br />                    }<br />                    catch (Exception ex) {}<br />                }<br />            }<br />        }<br />    }<br />}</pre>
+        <p class="BodyText">When the above lp.writeLabel method is executed, the following printer commands are sent to the printer after variable replacements:</p><pre class="Codeblock" xml:space="preserve">DIR 4<br />AN 7<br />PP 40, 180<br />FT "Swiss 721 Bold Condensed BT",20<br />PT "Honeywell AirGenius 4"<br />PP 150,180<br />BARSET "CODE128",3,1,4,240<br />PB "92926003104"<br />PP 400, 330<br />FT "Letter Gothic 12 Pitch BT",14<br />PT "92926003104"<br />PF</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

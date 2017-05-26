@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Command and Attribute Format</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/TableStyles/TableBasic.css" rel="stylesheet" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Command and Attribute Format</h1>
+        <p class="BodyText">Printing commands and attributes may be specified in a file, a string, or a JavaScript object. Regardless of the form, the contents must be in compliance with the JSON (JavaScript Object Notation) format.</p>
+        <p class="BodyText"> In addition to meeting the restrictions specified for the JSON standard (<a href="http://www.json.org/" target="_blank">www.json.org</a>), printing commands and attributes should also follow the layout described here.</p>
+        <p class="BodyText">All settings intended for the Printing API must be contained within the LINEPRINTERCONTROL object, which contains the following required and optional members in this order:</p>
+        <ul>
+            <li value="1">FormatVersion  (required): A string value that identifies the revision number of the LINEPRINTERCONTROL object JSON schema.  It should conform to the standard four part version number format commonly used in software development.  An example of a proper FormatVersion member would be:<br /></li>
+        </ul><pre class="Codeblock" style="margin-left: 40px;">"FormatVersion" : "1.0.0.0"</pre>
+        <ul>
+            <li value="1">Platform: A string value that identifies the target platform which the settings are intended for. This member is only required to support cross-platform printing. For instance, the JavaScript Printing API can select the proper LINEPRINTERCONTROL object from an array of LINEPRINTERCONTROL objects based on the current platform at runtime. To use this feature, the LINEPRINTERCONTROL object must contain the "Platform" member. Possible values are: "Android", "iOS", "Windows", "Windows_CE" and "Windows_RT".</li>
+            <li value="2">DEFAULTS (required): This member object contains a set of name/value pairs that specify the default settings used when a desired setting is not specified in one of the printer specific sections.</li>
+            <li value="3">PRINTERS (required): This member object contains name/object pairs that specify the individual settings for each printer.</li>
+            <li value="4">LABELS (optional): This member object contains name/object pairs for groups of label definitions. Each label group object name may be included in the settings for a specific printer in the PRINTERS object.</li>
+        </ul>
+        <p class="BodyText">Following these basic format rules, a generic Command and Attribute JSON would look something like this:</p><pre class="Codeblock" xml:space="preserve">{
+"LINEPRINTERCONTROL" : {
+    "FormatVersion" : "1.0.0.0",
+    "DEFAULTS" : {
+        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"
+    },
+    "PRINTERS" : {
+        "Printer1" : { "PrinterNumber" : 1, "StringSetting" : "Uno" },
+        "Printer2" : { "PrinterNumber" : 2, "StringSetting" : "Dos" }
+    }
+}
+}</pre>
+        <h2>Add Comments</h2>
+        <p class="BodyText">Any name/value pair whose name begins with "COMMENT" is ignored.  These string values are only intended to improve the readability, and should never contain actual printer settings.  Based on this rule, the following LINEPRINTERCONTROL object is functionally identical to the one in the previous example:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "COMMENT" : "These values are used by every printer unless overridden.",<br />        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "COMMENT" : "Separate entries for each printer model.",<br />        "Printer1" : { "PrinterNumber" : 1, "StringSetting" : "Uno" },<br />        "Printer2" : { "PrinterNumber" : 2, "StringSetting" : "Dos" }<br />    }<br />}<br />}</pre>
+        <h2>Share Common Settings</h2>
+        <p class="BodyText">Any name/value pair whose name begins with "INCLUDE" indicates an additional settings section to be included. The string value (or array of string values) associated with the name should match a separate object that appears later in the LINEPRINTERCONTROL object.  </p>
+        <p class="BodyText">This rule allows multiple printers to share the same settings where appropriate.  In the following simplified example, the INCLUDE member allows multiple printers to share the same Boolean setting values:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "Printer1" : { "INCLUDE" : "NumberedPrinter", "StringSetting" : "Uno" },<br />        "Printer2" : { "INCLUDE" : "NumberedPrinter", "StringSetting" : "Dos" },<br />        "PrinterA" : { "INCLUDE" : "LetteredPrinter", "StringSetting" : "Alpha" },<br />        "NumberedPrinter" : { "HasNumberInName" : true, "HasLetterInName" : false },<br />        "LetteredPrinter" : { "HasNumberInName" : false, "HasLetterInName" : true }<br />    }<br />}<br />}</pre>
+        <p class="BodyText">Based on this example, Printer1 and Printer2 would support settings for NumberedPrinter while PrinterA would not.  This feature provides a convenient method of sharing settings across the same family of printer models.</p>
+        <p class="BodyText">The Printing API also supports multiple INCLUDE items in the same object.  One way to do this is through the use of multiple INCLUDE_<i>x</i> members where <i>x</i> is a different number to distinguish the member names. The other method involves the use of an INCLUDE member with an array of string values as illustrated below:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "Printer1" : { "INCLUDE" : "Feature1", "PrinterCode" : 1 },<br />        "Printer2" : { "INCLUDE" : "Feature2", "PrinterCode" : 2 },<br />        "Printer3" : { "INCLUDE_1" : "Feature1", "INCLUDE_2" : "Feature2", "PrinterCode" : 3 },<br />        "Printer4" : { "INCLUDE" : [ "Feature1", "Feature2" ], "PrinterCode" : 4 },<br />        "Feature1" : { "EnableFeature1" : true },<br />        "Feature2" : { "EnableFeature2" : true }<br />    }<br />}<br />}</pre>
+        <p class="BodyText">An object referenced by an INCLUDE or INCLUDE_<i>x</i> member can also include other objects.  In this example, the Printer1 object includes the Feature1 object, which in turn includes the SubFeature1 object:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "Printer1" : { "INCLUDE" : "Feature1", "StringSetting" : "Uno" },<br />        "Printer2" : { "INCLUDE" : "Feature2", "StringSetting" : "Dos" },<br />        "Feature1" : { "INCLUDE" : "SubFeature1", "EnableFeature1" : true },<br />        "SubFeature1" : { "EnableSubFeature1" : true },<br />        "Feature2" : { "EnableFeature2" : true }<br />    }<br />}<br />}</pre>
+        <p class="BodyText">While the INCLUDE feature is a powerful tool, there are some limitations to what it can do:</p>
+        <ul>
+            <li value="1">The INCLUDE or INCLUDE_<i>x</i> member should never appear in the DEFAULTS object.</li>
+            <li value="2">The INCLUDE or INCLUDE_<i>x</i> member must reference an object that appears later in the LINEPRINTERCONTROL object.</li>
+            <li value="3">Any duplicate values encountered in an included object are ignored unless they were only previously defined in the DEFAULTS object.</li>
+        </ul>
+        <h2>Resolve Duplicate Setting Values</h2>
+        <p class="BodyText">Speaking of duplicate values, the Printing API follows a fairly straightforward precedence rule for determining which values to store and which values to ignore.  Basically, the first occurrence of a printer setting member found outside the DEFAULTS object defines the value.  If a specific printer setting is not found outside the DEFAULTS section, then the default value is used instead.  The following example illustrates this in better detail:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "NumSetting" : 1, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "Printer1" : { "StringSetting" : "Uno" },<br />        "Printer2" : { "INCLUDE" : "ExtraSetting", "NumSetting" : 2, "StringSetting" : "Dos" },<br />        "Printer3" : { "INCLUDE" : "ExtraSetting", "NumSetting" : 3 },<br />        "ExtraSetting" : { "StringSetting" : "Tres" }<br />    }<br />}<br />}</pre>
+        <p class="BodyText">In this example, it contains entries to support three different printer models ("Printer1", "Printer2", and "Printer3") and each model has two settings ("NumSetting" and "StringSetting").  The setting values are:</p>
+        <table class="TableStyle-TableBasic" cellspacing="0" style="mc-table-style: url('Resources/TableStyles/TableBasic.css');">
+            <col class="Column-Column1" />
+            <col class="Column-Column1" />
+            <col class="Column-Column1" />
+            <thead>
+                <tr class="Head-Header1">
+                    <th class="HeadE-Column1-Header1">Printer</th>
+                    <th class="HeadE-Column1-Header1">NumSetting</th>
+                    <th class="HeadD-Column1-Header1">StringSetting</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">Printer1</td>
+                    <td class="BodyE-Column1-Body1">1</td>
+                    <td class="BodyD-Column1-Body1">Uno</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyE-Column1-Body1">Printer2</td>
+                    <td class="BodyE-Column1-Body1">2</td>
+                    <td class="BodyD-Column1-Body1">Dos</td>
+                </tr>
+                <tr class="Body-Body1">
+                    <td class="BodyB-Column1-Body1">Printer3</td>
+                    <td class="BodyB-Column1-Body1">3</td>
+                    <td class="BodyA-Column1-Body1">Tres</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="BodyText">The Printer1 object demonstrates the two simplest cases.  It doesn’t specify a NumSetting value, so it simply inherits a value of 1 from the DEFAULTS object.  Conversely, it does specify a StringSetting value of "Uno", which overrides the value of "Default" from the DEFAULTS object.</p>
+        <p class="BodyText">The Printer2 object illustrates how only the first occurrence of a value is used.  In this case, the StringSetting value of "Dos" overrides the value of "Default" from the DEFAULTS object.  However, by the time the ExtraSetting object is parsed, a non-default StringSetting value has already been found.  As a result, the parser discards the "Tres" value.</p>
+        <p class="BodyText">The Printer3 object demonstrates that the ExtraSetting object can override the "Default" value, but only because the Printer3 object itself doesn’t specify the StringSetting value directly.</p>
+        <h2>Specify an Array of Bytes</h2>
+        <p class="BodyText">According to the JSON standard, an array of bytes would be specified by an array of numerical values.  While this notation is still supported, the Printing API also allows applications to specify a byte array via a simple string value.  When it detects the array bracket characters ‘[‘ and ‘]’ inside a string, the JSON parser will automatically translate the string into a series of bytes.  The following example demonstrates several different ways to specify a simple escape sequence:</p><pre class="Codeblock" xml:space="preserve">{<br />"LINEPRINTERCONTROL" : {<br />    "FormatVersion" : "1.0.0.0",<br />    "DEFAULTS" : {<br />        "BoolSetting" : true, "NumSetting" : 42, "StringSetting" : "Default"<br />    },<br />    "PRINTERS" : {<br />        "COMMENT" : "All of these printers have the same ByteSetting value",<br />        "Printer1" : { "ByteSetting" : [ 27, 119, 33, 0 ] },<br />        "Printer2" : { "ByteSetting" : "[0x1b,w,!,0x00]" },<br />        "Printer3" : { "ByteSetting" : "[0x1bw!0x00]" },<br />        "Printer4" : { "ByteSetting" : "[\u001bw!\u0000]" },<br />        "Printer5" : { "ByteSetting" : "[\u001b,w,!,\u0000]" }<br />    }<br />}<br />}</pre>
+        <p class="BodyText">The Printer1 object uses the standard JSON array of number values method, while the remaining objects use the special string processing functionality.</p>
+        <p class="BodyText">The Printer2 object uses the legacy method of specifying hexadecimal values using "0x" followed by two hex digits.  This matches the format used in the .NET LinePrinter configuration file.  The Printer3 object uses the same notation, but omits the comma separators.</p>
+        <p class="BodyText">The Printer5 object uses the JSON escape sequence for hexadecimal characters (\u followed by four hex digits) to specify the byte values.  And the Printer4 object uses the same escape sequence but omits the comma separators.</p>
+        <p class="BodyText">There are several important rules to follow when using special byte array character strings:</p>
+        <ul>
+            <li value="1">The string must start with '[' and end with']'.  Any occurrence of '[' not at the beginning of the string will instruct the Printing API to send a value of 91 to the printer.  Along those same line, any occurrence of ']' not at the end of the string indicates a byte value of 93.</li>
+            <li value="2">Only byte values between 0 and 255 are valid.</li>
+            <li value="3">The Printing API ignores any comma characters within the string.  If it is necessary to send an actual comma character to the printer, either use the standard byte array format (with a value of 44) or use the legacy hexadecimal format (with a value of 0x2c).  The JSON escape sequence CANNOT be used to specify a comma, due to how those values are translated before parsing occurs.</li>
+        </ul>
+        <h2><a name="LabelPrintingDefinitions"></a>Label Printing Commands and Attributes</h2>
+        <p class="BodyText">The Printing API supports both receipt printing and label printing via the same LINEPRINTERCONTROL JSON object although the settings in the DEFAULTS object mostly target receipt printing. The label printing commands and attributes follow similar rules described in the previous sections.</p>
+        <h3>Label Printer Entries</h3>
+        <p class="BodyText">The label printer entries are defined in the PRINTERS object like the receipt printers. You should override the Initialize and NormalFont settings for label printer entries as shown below:</p><pre class="Codeblock" xml:space="preserve">"PRINTERS":<br />{<br />    "PB22_Fingerprint":<br />    {<br />        "DisplayName":"PB22 Bt Label Printer",<br />        "Initialize": [], "NormalFont": []<br />    }<br />}</pre>
+        <p class="BodyText">The Printing API sends the Initialize commands followed by the NormalFont commands to the printer after a connection is successfully established. Unless these settings are overridden, the ESC/P commands defined for Initialize and NormalFont in the DEFAULTS object are sent. This may not work well with label printers. In the above example, both Initialize and NormalFont settings were set to an empty array so no commands are sent after the printer connection is opened. You may customize these settings if you wish to initialize the printer with specific printer commands.</p>
+        <h3>Label Definitions</h3>
+        <p class="BodyText">To print labels, you also need to define the commands to instruct the printer to print the label with a certain layout. The Printing API supports both raw label data stream and storing and invoking a label format on the printer. It also supports variable substitutions in the data stream or label format.</p>
+        <p class="BodyText">The label definitions are defined in the LABELS object in groups. Each label group is an object whose name identifies the group. In the following example, the LABELS object contains one group identified by the name of "2in_FingerprintLabels". This group contains two label definition objects, ItemLabel and URL_QRLabel.</p><pre class="Codeblock" xml:space="preserve">"LABELS":<br />{<br />    "2in_FingerprintLabels":<br />    {<br />        "ItemLabel":<br />        {<br />            "LabelDataStream": "DIR 4:AN 7:PP 30, 120:FT \"Swiss 721 Bold Condensed BT\",16:PT
+             \"ItemName$$\":PP 120,75:BARSET \"CODE128\",3,1,4,150:PB \"ItemNo$$\":PP 280,
+             260:FT \"Letter Gothic 12 Pitch BT\",14:PT \"ItemNo$$\":PF\r\n",<br />            "VarPostfix": "$$"<br />        },<br />        "URL_QRLabel":<br />        {<br />             "StoreFormat": "INPUT ON\r\nLAYOUT INPUT \"URLQRLABEL.LAY\"\r\nDIR 4:AN 7:PP 100,
+             20:FT \"Swiss 721 Bold Condensed BT\",16:PT VAR1$:PP 200, 20:FT \"Letter Gothic
+             12 Pitch BT\",14:PT VAR2$:PP 70,450:BARSET \"QRCODE\",1,1,8,2,2:PB VAR3$\r\nLAYOUT
+             END\r\nINPUT OFF\r\n",<br />             "InvokeFormat": "INPUT OFF\r\nFORMAT INPUT \"#\",\"@\",\"|\"\r\nINPUT
+             ON\r\nLAYOUT RUN \"URLQRLABEL.LAY\"\r\n#qTextLine1$|qTextLine2$|qURL$|@\r\nPF\r\nINPUT
+             OFF\r\n",<br />            "VarPrefix": "q",<br />            "VarPostfix": "$"<br />        }<br />    }<br />}</pre>
+        <p class="BodyText">The label definition object may contain one or more of the following members:</p>
+        <ul>
+            <li value="1">LabelDataStream – A string containing printer language specific commands to print the label.</li>
+            <li value="2">StoreFormat – A string containing printer language specific commands to store the label layout format on the printer. The layout format may contain variables which must be specified in the syntax supported by the printer language. If this member is present, the Printing API will always send the StoreFormat commands followed by the InvokeFormat commands to the printer.</li>
+            <li value="3">	InvokeFormat – A string containing printer language specific commands to invoke a label layout format stored on the printer to print the label. If the layout format contains variables, the InvokeFormat string must also specify the commands to substitute the variables.</li>
+            <li value="4">VarPrefix – A string containing the variable name prefix. If this member is not present, the prefix is default to an empty string.</li>
+            <li value="5">VarPostfix – A string containing the variable name postfix. If this member is not present, the postfix is default to an empty string.</li>
+        </ul>
+        <p class="BodyText">Each label definition object needs to contain either a LabelDataStream member or an InvokeFormat member. If both members are specified, the Printing API only uses the LabelDataStream member.</p>
+        <p class="BodyText">The Printing API will substitute the variables defined in the LabelDataStream and the InvokeFormat members with the data specified in the API method. A complete variable name includes the VarPrefix and the VarPostfix values. For instance, the "qURL$" variable name specified in the InvokeFormat above starts with "q" (VarPrefix) and ends with "$" (VarPostfix). The purpose of the prefix and postfix is to distinguish the variable name from other printer commands.</p>
+        <p class="BodyText">The Printing API method takes key-value pairs for the variable substitutions where each key specifies the variable name (without prefix and suffix) and the key value specifies the data to replace the variable with. The Printing API will form the complete variable name based on the VarPrefix and VarPostfix settings. For more information, please refer to the language specific API documentation.</p>
+        <h3>Include Label Groups in Printer Settings</h3>
+        <p class="BodyText">You may use the LABEL_x member to include a label group to the printer settings, where x is a number to make the member name unique. For instance, the following example includes the 2in_FingerprintLabels label group. Now the application can use the Printing API to print either the ItemLabel or the URL_QRLabel to a printer using the PB22_Fingerprint settings.</p><pre class="Codeblock" xml:space="preserve">"PRINTERS":<br />{<br />    "PB22_Fingerprint":<br />    {<br />        "DisplayName":"PB22 Bt Label Printer",<br />        "LABEL_01": "2in_FingerprintLabels",<br />        "Initialize": [], "NormalFont": []<br />    }<br />}</pre>
+        <h2><a name="PrinterStatusQueries"></a>Printer Status Commands and Attributes</h2>
+        <p class="BodyText">The Printing API provides methods for retrieving the current state of specific printer attributes like paper presence and battery condition.  These status retrieval commands are controlled by a special STATUS object within the LINEPRINTERCONTROL JSON object.  The STATUS object contains one or more status name/value pairs linked to different printers in the PRINTERS object through the special keywords STATUS_QUERIES and STATUS_EVENTS (reserved for future use).</p>
+        <h3>Status Query Entries</h3>
+        <p class="BodyText">Adding support for status query functionality to the JSON object is fairly similar to adding shared include sections or label sections.</p>
+        <p class="BodyText"> First, a link is added to the printer object that ties a printer entry to the appropriate query status section later in the JSON object.  That link is identified by the string value specified by the STATUS_QUERIES keyword. </p>
+        <p class="BodyText">Next, a query object matching that value is added to the STATUS object.  That query object contains all the settings necessary to perform the status request on the printer.</p>
+        <p class="BodyText"> The following sample illustrates a JSON object containing two different printers (Printer1 and Printer2) that both share the same status query object (Common_StatusQueries):</p><pre class="Codeblock" xml:space="preserve">"LINEPRINTERCONTROL":
+{
+    "FormatVersion": "1.0.0.0",
+    "PRINTERS":
+    {
+        "Printer1":
+        { "PrinterNumber": 1, "STATUS_QUERIES": "Common_StatusQueries" },
+	"Printer2":
+        { "PrinterNumber": 2, "STATUS_QUERIES": "Common_StatusQueries" }
+    },
+    "STATUS":
+    {
+        "Common_StatusQueries":
+        {
+            "QUERIES":
+            [
+                {
+                    "GetStatusCommand": "[0x1b,{,S,T,?,}]",
+                    "StatusInitTimeout": 5000,
+                    "StatusGapTimeout": 500,
+                    "StatusEndResponse": "[}]",
+                    "RESPONSES":
+                    [
+                        { "PrinterMsg" : "[P,:,N]", "MsgNo" : 223 },
+                        { "PrinterMsg" : "[B,:,V]", "MsgNo" : 226 }
+                    ]
+                }
+            ]
+        }
+    }
+}</pre>
+        <p class="BodyText">As seen in the preceding example, the Common_StatusQueries object consists of a single QUERIES object whose value is an array of possible query objects.  In this example, we only have a single query object, but on some printers more than one action may be required to retrieve all of the desired information.</p>
+        <p class="BodyText">The query object contains several values that control how the Printing API acquires the status information from the printer:</p>
+        <ul>
+            <li value="1">First, there is the GetStatusCommand byte sequence, which identifies the character sequence that instructs the printer to send its status.  The example shown here uses the escape character followed by a {ST?} command, which is a fairly common status request on printers using the ESC-P language. </li>
+            <li value="2">Next, we have two timeout values (StatusInitTimeout and StatusGapTimeout) that control how long the Printing API waits for the printer to start or continue its response. </li>
+            <li value="3">Finally, we have the StatusEndResponse byte sequence that is used by the status query logic to determine the end of the printer’s reply to the status request.</li>
+        </ul>
+        <p class="BodyText">In addition to those values, a status query object normally contains an array of possible printer responses.  This array is identified by the reserved RESPONSES keyword.  Each response object contains two pieces of information:</p>
+        <ul>
+            <li value="1"> The first is the PrinterMsg byte array that specifies the status message to search for in the printer response. </li>
+            <li value="2">The second piece is the MsgNo value which provides the value returned to the application when the message is detected.</li>
+        </ul>
+        <p class="BodyText">In the preceding example, there were two potential responses identified by the P:N and B:V byte sequences.  The status query logic would simply read through the bytes returned by the printer looking for either the P:N or B:V character sequence.  If the sequence P:N was found in the reply, then the value 223 is returned, while if B:V were detected, then 226 is returned.  Also, if both sequences occurred in the printer reply, then both values would be returned by the status query.</p>
+        <p class="Footer">Printer Commands and Attributes User Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this document to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Printer Commands and Attributes User Guide" target="_blank">Technical Communications</a>.</p>
+    </body>
+</html>

@@ -1,0 +1,96 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".LabelPrintActivity" >
+
+    <LinearLayout
+        android:id="@+id/linearLayoutInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/textPrinterID"
+            android:text="@string/printer_id_label"
+            android:gravity="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp" />
+        <EditText
+            android:id="@+id/editPrinterID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_printer_id"
+            android:gravity="left"
+            android:inputType="textNoSuggestions"
+            android:selectAllOnFocus="true"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="10dp"
+            android:layout_weight="1">
+       </View>
+
+        <TextView
+            android:id="@+id/textBtMacAddr"
+            android:text="@string/bt_mac_addr_label"
+            android:gravity="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp" />
+        <EditText
+            android:id="@+id/editMacAddr"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_mac_address"
+            android:gravity="left"
+            android:inputType="textNoSuggestions"
+            android:selectAllOnFocus="true"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/linearLayoutInput"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/buttonPrintItemLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onPrintItemLabelButtonClicked"
+            android:text="@string/print_item_label" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="20dp"
+            android:layout_weight="1">
+       </View>
+
+        <Button
+            android:id="@+id/buttonPrintURLLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onPrintURLLabelButtonClicked"
+            android:text="@string/print_url_label" />
+
+    </LinearLayout>
+
+</RelativeLayout>

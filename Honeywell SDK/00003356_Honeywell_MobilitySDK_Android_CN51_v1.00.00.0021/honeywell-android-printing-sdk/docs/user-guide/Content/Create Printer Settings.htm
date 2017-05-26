@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Create Printer Settings</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Create Printer Settings</h1>
+        <p class="BodyText">The Printing Java API uses commands and attributes to control the data output for a specific printer model. Command and attribute settings define everything from escape character sequences to timing delays the printer needs to function correctly. The printer commands and attributes are defined in JSON format. This section supplements the <a href="../../prt-cmds-attribs-guide/Default.htm" target="_blank">Printer Commands and Attributes User Guide</a> by providing additional usage information specific to the Printing Java API.</p>
+        <p class="BodyText">The Honeywell Mobility Android Printing SDK zip file includes a file called printer_profiles.JSON in the libs subfolder. The JSON file contains a PRINTERS JSON object which contains settings for several printer models.</p>
+        <h2>Receipt Printer Settings</h2>
+        <p class="BodyText">For receipt printing, you may use PR2, PR3, PB21, PB31, PB42 and PB51 settings. You may modify the predefined settings or add a new printer object to the PRINTERS JSON object. All predefined settings include graphic and barcode settings. If you decide to create a new printer JSON object, the safest way is to clone the predefined settings of the desired printer model and add your own custom settings as seen in this example:</p><pre class="Codeblock" xml:space="preserve">"PRINTERS":<br />{<br />    "My_PR2":<br />    {<br />        "INCLUDE_01": "PR_SETTINGS", "DisplayName":"My PR2 Bt Printer",<br />        "PrintHeadWidth": 384, "INCLUDE_02": "BARCODE_SETTINGS",<br />        "MySlogan": "\u001bwmSave Time and Money at MYSTORE.com\u001bw!"<br />    }<br />}</pre>
+        <p class="BodyText">Note that My_PR2 defines a custom command called "MySlogan". You may use LinePrinter.sendCustomCommand("MySlogan") to send the custom command to the printer.</p>
+        <h2>Label Printer Settings</h2>
+        <p class="BodyText">The PRINTERS JSON object in the printer_profiles.JSON file contains PB22_Fingerprint and PB32_Fingerprint objects as an example for label printer settings. The next example shows some settings extracted from printer_profiles.JSON in order to explain the label printer settings.</p><pre xml:space="preserve" class="Codeblock">"DEFAULTS":<br />{<br />    "Initialize": "[0x00,0x00,0x00,0x00,0x1b,0x40,0x00,0x00,0x00]",<br />    "NormalFont": "[0x1b,0x77,!,0x1b,!,0x00]",<br />    "FormFeed": "[0x0d,0x0d,0x0d,0x0d,0x0d]",<br />    "BtConnectRetries" : 3, "BtconnectRetryDelay" : 100,<br />    "BtWriteDataReadyTimeout" : 10000, "BtWriteIntervalTimeout" : 10000,<br />    "BtMaxSegWrite" : 1024, "BtLinger" : 10<br />},<br />"PRINTERS":<br />{<br />    "PB22_Fingerprint":<br />    {<br />        "DisplayName":"PB22 Bt Label Printer",<br />        "LABEL_01": "2in_FingerprintLabels",<br />        "FormFeed": "[0x46,0x4F,0x52,0x4D,0x46,0x45,0x45,0x44]",<br />        "Initialize": [], "NormalFont": [],<br />        "NullsBeforeClose": 0, "PreCloseDelay": 1000<br />    }<br />}</pre>
+        <p class="BodyText">In the PB22_Fingerprint object, the LABEL_01 setting specified that this printer includes the label definitions defined in the 2in_FingerprintLabels object. The label definitions are defined in groups in a LABELS JSON object. For more information on label definitions, see <a href="Create Label Definitions.htm">Create Label Definitions</a>.</p>
+        <p class="BodyText">The FormFeed setting specifies a command sequence that overrides the ESC/P sequence defined in the DEFAULTS object.</p>
+        <p class="BodyText">Both the Initialize and NormalFont settings are set to an empty array to override the ESC/P sequence defined in the DEFAULTS object. The Printing Java API sends the Initialize commands followed by the NormalFont commands to the printer after a connection is successfully established. Unless these settings are overridden, the ESC/P commands defined for Initialize and NormalFont in the DEFAULTS object are sent. This may not work well with label printers. In this example, no commands are sent after the printer connection is opened. You may customize these settings if you wish to initialize the printer with specific printer commands.</p>
+        <p class="BodyText">The PreCloseDelay setting specifies to wait 1000 milliseconds after the LabelPrinter.disconnect method is called to close the printer connection. The amount of delay required depends on the size of the data sent to the printer. The delay is to ensure the data is transmitted to the printer before the connection is closed.</p>
+        <p class="BodyText">You may also define custom command settings in the printer JSON object and use the LabelPrinter.sendCustomCommand method to send the commands to the printer.</p>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

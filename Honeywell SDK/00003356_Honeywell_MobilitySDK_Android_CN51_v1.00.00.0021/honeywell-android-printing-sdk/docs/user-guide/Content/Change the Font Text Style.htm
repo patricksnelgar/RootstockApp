@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Generate a Receipt">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Change the Font Text Style</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1 class="Heading1">Change the Font Text Style</h1>
+        <p class="BodyText">You may change the text styles within your receipt. The LinePrinter class gets information about the printer functions from the commands and attributes file specified in the LinePrinter constructor. If the loaded printer settings do not contain information on how to perform a font style command, the command is ignored without generating an error. This allows you to make calls regardless of the printer you are connected to.</p>
+        <p class="BodyText">The LinePrinter class supports these methods to set font styles:</p><pre class="Codeblock" xml:space="preserve">public void setBold(Boolean enabled) throws LinePrinterException
+public void setCompress(Boolean enabled) throws LinePrinterException
+public void setDoubleHigh(Boolean enabled) throws LinePrinterException
+public void setDoubleWide(Boolean enabled) throws LinePrinterException
+public void setItalic(Boolean enabled) throws LinePrinterException
+public void setStrikeout(Boolean enabled) throws LinePrinterException
+public void setUnderline(Boolean enabled) throws LinePrinterException</pre>
+        <p class="BodyText">The effect of the font styles depends on how the font style settings are defined and the printer capability. For example, the font style settings in the next code sample are extracted from the standard printer_profiles.JSON file included with the Printing SDK:</p><pre class="Codeblock" xml:space="preserve">"DEFAULTS":<br />{<br />    "<b>BoldIsFont</b>": true, "BoldOff": "[0x1b,0x77,!]",<br />    "BoldOn": "[0x1b,0x77,0x6D]",<br />    "CompressDotsHigh": 12, "<b>CompressIsFont</b>": true,<br />    "CompressOff": "[0x1b,0x77,!]", "CompressOn": "[0x1b,0x77,0x42]",<br />    "DoubleHighDotsHigh": 32, "<b>DoubleHighIsFont</b>": false,<br />    "DoubleHighMask": 16, "DoubleHighOff": "[0x1b,!,0x10]",<br />    "DoubleHighOn": "[0x1b,!,0x10]",<br />    "DoubleWideDotsHigh": 16, "DoubleWideHighPrefix": "[0x1b,!]",<br />    "<b>DoubleWideIsFont</b>": false,<br />    "DoubleWideMask": 32, "DoubleWideOff": "[0x1b,!,0x20]",<br />    "DoubleWideOn": "[0x1b,!,0x20]"<br />}</pre>
+        <p class="BodyText">Note the <b>boldface </b>settings which determine whether the font is implemented using a separate font or as a font attribute. In this example Bold and Compress are defined as font styles, and Double High and Double Wide as font attributes. You may combine a font style with different font attributes but you cannot combine multiple font styles. For example, if you call setBold(true) followed by setCompress(true), the font style will be set to Compress because there can only be one font style at a time. However, you may combine the Bold font style with Double High and Double Wide attributes like the following code snippet demonstrates:</p><pre class="Codeblock" xml:space="preserve">// lp is an instance of LinePrinter object.
+lp.setBold(true);
+lp.setDoubleHigh(true);
+lp.setDoubleWide(true);</pre>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>

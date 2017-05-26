@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LabelPrinterSample</string>
+    <string name="action_settings">Settings</string>
+    <string name="printer_id_label">Printer ID:</string>
+    <string name="bt_mac_addr_label">Bluetooth MAC Address:</string>
+    <string name="enter_printer_id">Enter a printer ID</string>
+    <string name="enter_mac_address">Enter a MAC address</string>
+    <string name="print_item_label">Print Item Label</string>
+    <string name="print_url_label">Print URL Label</string>
+    <string name="title_activity_print_item_label">Print Item Label</string>
+    <string name="item_name_label">Item Name:</string>
+    <string name="item_num_label">Item Number:</string>
+    <string name="enter_item_name">Enter an item name</string>
+    <string name="enter_item_number">Enter an item number</string>
+    <string name="print">Print</string>
+    <string name="ProgressStatus">Progress and Status</string>
+
+    <string name="title_activity_print_urllabel">Print URL QRCode Label</string>
+    <string name="url_text_label">URL:</string>
+    <string name="line_1_label">Line 1:</string>
+    <string name="line_2_label">Line 2:</string>
+    <string name="enter_url_qrcode">URL to be encoded in QRCode</string>
+    <string name="enter_line_1">Text line 1</string>
+    <string name="enter_line_2">Text line 2</string>
+
+</resources>

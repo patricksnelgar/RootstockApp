@@ -1,0 +1,5 @@
+ <resources>
+    <declare-styleable name="MeasurementText">
+        <attr name="measurement_id" format="integer"/>
+    </declare-styleable>
+</resources>

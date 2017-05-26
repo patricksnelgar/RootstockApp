@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="Generate a Receipt">
+    <!-- saved from url=(0016)http://localhost -->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>Write Text to the&#160;Printer and&#160;Position the&#160;Printhead</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" data-mc-generated="True" />
+        <link href="Resources/Stylesheets/ITCOnlineHelp_OLD.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/custom.modernizr.js">
+        </script>
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.config.js">
+        </script>
+        <script src="../Resources/Scripts/foundation.min.js">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js">
+        </script>
+    </head>
+    <body>
+        <h1>Write Text to the&#160;Printer and&#160;Position the&#160;Printhead</h1>
+        <p class="BodyText">The LinePrinter class supports these methods to write text to the printer and position the printhead:</p><pre class="Codeblock" xml:space="preserve">public void write(byte[] bytes) throws LinePrinterException<br />public void write(String aStr) throws LinePrinterException<br />public void writeLine(String aStr) throws LinePrinterException<br />public void newLine(int numLines) throws LinePrinterException<br />public void flush() throws LinePrinterException
+public void sendCustomCommand(String aCommandID)
+public void formFeed() throws PrinterException</pre>
+        <p class="BodyText">To write text to the printer, use the write(String) method.</p>
+        <p class="BodyText">To send custom printer commands to the printer,  use the write(byte[]) method.</p>
+        <p class="BodyText">To send a certain text and/or command sequence multiple times, you may define a custom setting and call the sendCustomCommand method with the setting name to send the defined setting value to the printer. Custom commands may be defined in the commands and attributes file, or added to the current printer settings via the LinePrinter.setSettingBytes and LinePrinter.setSettingString methods.</p>
+        <p class="BodyText"> The write methods and the sendCustomCommand method only write the data to an internal print buffer. The data is sent to the printer through the transport medium when the buffer is full or when the newLine or flush method is called.</p>
+        <p class="BodyText">The newLine method advances the printer the specified number of lines and flushes the internal print buffer.</p>
+        <p class="BodyText">The writeLine method is a convenient method that writes the data followed by a new line.</p>
+        <p class="BodyText">The formFeed method feeds the paper. The LinePrinter class inherits this method from the Printer class. When it is called from a LinePrinter object, the method throws a LinePrinterException if an unexpected error occurs.</p>
+        <p class="Footer">Honeywell Mobility Android Printing Java API&#160;Guide<br />Copyright © 2014–2016 Honeywell International Inc. All rights reserved.<br />Send feedback about this user guide to <a href="mailto:ACSHSMTechnicalCommunications@honeywell.com?subject=Feedback on Honeywell Mobility Android Printing Java API Guide">Technical Communications</a>.</p>
+    </body>
+</html>
