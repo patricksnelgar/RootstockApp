@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100); //Any number
-            }
+        }
         
         createAidcManager();
 
@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                     if(hasScanner){
                         regsiterBarcodeListener();
                     }
+                } else {
+                    debugUtil.logMessage(TAG,"Could not create Barcode Reader object", DebugUtil.LOG_LEVEL_ERROR, dev);
                 }
                       
             }
@@ -372,21 +374,21 @@ public class MainActivity extends AppCompatActivity {
     public void updateIdentifierFields(final Cursor c){
         final TextView textId = (TextView) findViewById(R.id.id);
         final TextView textBarcode = (TextView) findViewById(R.id.barcode);
-        final TextView textType = (TextView) findViewById(R.id.type);
-        final TextView textSite = (TextView) findViewById(R.id.site);
-        final TextView textBlock = (TextView) findViewById(R.id.block);
+        //final TextView textType = (TextView) findViewById(R.id.type);
+        //final TextView textSite = (TextView) findViewById(R.id.site);
+        //final TextView textBlock = (TextView) findViewById(R.id.block);
         final TextView textFPI = (TextView) findViewById(R.id.FPI);
         final TextView textCultivar = (TextView) findViewById(R.id.cultivar);
-        final TextView textGraftYear = (TextView) findViewById(R.id.graftyear);
+        //final TextView textGraftYear = (TextView) findViewById(R.id.graftyear);
 
         final long caneId = c.getLong(c.getColumnIndexOrThrow(DbIdentifiers._ID));
         final String barcode = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BARCODE_TITLE));
-        final String type = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_TYPE_TITLE));
-        final String site = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_SITE_TITLE));
-        final String block = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BLOCK_TITLE));
+        //final String type = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_TYPE_TITLE));
+        //final String site = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_SITE_TITLE));
+        //final String block = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BLOCK_TITLE));
         final String FPI = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_FPI_TITLE));
         final String cultivar = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE));
-        final String graftYear = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE));
+        //final String graftYear = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE));
 
        
         runOnUiThread(new Runnable() {
@@ -396,12 +398,12 @@ public class MainActivity extends AppCompatActivity {
                 ((MeasurementText) findViewById(R.id.cane_diameter)).setText("");
                 textId.setText(Long.toString(caneId));
                 textBarcode.setText(barcode);
-                textType.setText(type);
-                textSite.setText(site);
-                textBlock.setText(block);
+                //textType.setText(type);
+                //textSite.setText(site);
+                //textBlock.setText(block);
                 textFPI.setText(FPI);
                 textCultivar.setText(cultivar);
-                textGraftYear.setText(graftYear);
+                //textGraftYear.setText(graftYear);
             }
         });
         
