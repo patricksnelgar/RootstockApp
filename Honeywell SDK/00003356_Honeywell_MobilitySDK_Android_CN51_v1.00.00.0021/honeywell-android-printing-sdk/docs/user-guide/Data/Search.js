@@ -1,1 +1,0 @@
-define({r:0.5,st:'Stem',n:1,t:[0],u:['../Content/About the Constructors.htm'],s:['$'],p:[['$',14],['each',14],['p',7],['use',14]]});
