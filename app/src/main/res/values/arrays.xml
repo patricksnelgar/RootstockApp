@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="forms">
+        <item>Cane info</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string-array name="sites">
+        <item>TRC</item>
+        <item>MARC</item>
+        <item>KK</item>
+        <item>GIS</item>
+    </string-array>
+    <string-array name="TRC_blocks">
+        <item>49</item>
+        <item>50</item>
+    </string-array>
+</resources>

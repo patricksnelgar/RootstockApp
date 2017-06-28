@@ -12,14 +12,14 @@ public class DebugUtil {
 
     public DebugUtil() {}
 
-    public void logMessage(String tag, String message, boolean dev){
-        if(dev){
+    public void logMessage(String tag, String message, String dev){
+        if(dev.equals("DEV")){
             Log.d(tag,message);
         }
     }
 
-    public void logMessage(String tag, String message, String level, boolean dev){
-        if(dev){
+    public void logMessage(String tag, String message, String level, String dev){
+        if(dev.equals("DEV")){
             switch(level){
                 case LOG_LEVEL_DEBUG:
                     Log.d(tag, message);

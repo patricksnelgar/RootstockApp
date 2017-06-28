@@ -5,16 +5,291 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import echo.rootstockapp.DbContract.DbIdentifiers;
 import echo.rootstockapp.DbContract.DbObservations;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Arrays;
+
+import echo.rootstockapp.DbContract.DbIdentifiers;
 
 public class DbHelper extends SQLiteOpenHelper {
-
+    private final String TAG = DbHelper.class.getSimpleName();
     private static final int DATABASE_VERSION = 6;
     public static final String DATABASAE_NAME = "HandHeld.db";
+    private String run_environment;
+    private DebugUtil debugUtil;
 
-    public DbHelper(Context context) {
+    public DbHelper(Context context, String env) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
+        run_environment = env;
+        debugUtil = new DebugUtil();
+    }
+
+    public boolean insertIdentifiers(File f){
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String[] headers = br.readLine().split(",");
+            debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
+            SQLiteDatabase db = this.getWritableDatabase();
+            String[] input = br.readLine().split(",");
+            
+            debugUtil.logMessage(TAG, "headers:"+headers.length+" first row:" + input.length, run_environment);
+            debugUtil.logMessage(TAG, "Input: <" + Arrays.toString(input) + ">", run_environment);
+            /*
+            db.execSQL("INSERT INTO " + DbIdentifiers.IDENTIFIERS_TABLE_NAME + " (" +  
+                DbIdentifiers._ID + "," + DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + "," + 
+                DbIdentifiers.IDENTIFIERS_TYPE_TITLE + "," + DbIdentifiers.IDENTIFIERS_SITE_TITLE + "," +
+                DbIdentifiers.IDENTIFIERS_BLOCK_TITLE + "," + DbIdentifiers.IDENTIFIERS_FPI_TITLE + "," + 
+                DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE  + "," + DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE + ")" +
+                "VALUES (" + 
+                    input[0] + "," + input[1] + "," + input[2] + "," + input[3] + "," + input[4] + "," +
+                    input[5] + "," + input[6] + "," + input[7] +")");
+                    */
+        } catch (Exception e){
+            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        }
+        return false;
+    }
+
+    /*
+    private void initializeDb(){
+        //databaseHelper = new DbHelper(getApplicationContext());
+        //SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        //db.execSQL("DROP FROM observations");
+        //db.execSQL("DROP TABLE " + DbObservations.OBSERVATIONS_TABLE_NAME);
+        //db.execSQL("DELETE FROM identifiers");
+        //db.execSQL(DbContract.DUMMY_DATA);
+    }
+
+    public void databaseLookup(String barcode){
+        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        
+        String[] columns = {
+            DbIdentifiers._ID,
+            DbIdentifiers.IDENTIFIERS_BARCODE_TITLE,
+            DbIdentifiers.IDENTIFIERS_TYPE_TITLE,
+            DbIdentifiers.IDENTIFIERS_SITE_TITLE,
+            DbIdentifiers.IDENTIFIERS_BLOCK_TITLE,
+            DbIdentifiers.IDENTIFIERS_FPI_TITLE,
+            DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE,
+            DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE
+
+        };
+
+        String columnFilter = DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + " = ?";
+        String[] columnValues = {barcode};
+
+        Cursor c = db.query(
+            DbIdentifiers.IDENTIFIERS_TABLE_NAME,
+            columns,
+            columnFilter,
+            columnValues,
+            null,
+            null,
+            null
+        );
+
+        debugUtil.logMessage(TAG, "Got rows from DB:" + c.getCount(), run_environment);
+        if(c.getCount() != 1 && c.getCount() > 0){
+            debugUtil.logMessage(TAG, "Got too many rows from db", DebugUtil.LOG_LEVEL_ERROR, run_environment);            
+            return;
+        }
+        try {
+            c.moveToNext();
+            updateIdentifierFields(c);
+        } catch (Exception e){
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+
+        columns = new String[]{
+            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
+            DbObservations.OBSERVATIONS_VALUE_TITLE
+        };
+
+        columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
+        columnValues = new String[]{c.getString(c.getColumnIndexOrThrow(DbIdentifiers._ID))};
+
+        final Cursor cur = db.query(
+            DbObservations.OBSERVATIONS_TABLE_NAME,
+            columns,
+            columnFilter,
+            columnValues,
+            null,
+            null,
+            null
+        );
+
+        if(cur.getCount() > 0){
+            dataEdit = true;
+            debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
+            final MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
+            final MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
+            final String caneLengthId = caneLengthText.getMeasurementId();
+            final String caneDiameterId = caneDiameterText.getMeasurementId();
+            
+            
+
+            for(int i = 0; i < cur.getCount(); i++){
+                cur.moveToNext();
+                String measureId = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
+                final String measureValue = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
+
+                if(measureId.equals(caneLengthId)){ 
+                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> length ID <" + caneLengthId +
+                            "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, run_environment);
+                    runOnUiThread(new Runnable(){
+                        @Override
+                        public void run(){
+                            caneLengthText.setText(measureValue);
+                        }
+                    });                    
+                }else if(measureId.equals(caneDiameterId)){
+                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> diameter ID <" + caneDiameterId +
+                        "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, run_environment);
+                    runOnUiThread(new Runnable(){
+                        @Override
+                        public void run(){
+                            caneDiameterText.setText(measureValue);
+                        }
+                    });                    
+                }
+                
+            }         
+        } else {
+            dataEdit = false;
+        }
+    }
+
+    public void saveData(View v){
+       debugUtil.logMessage(TAG, "Is edit? " + dataEdit, run_environment);
+
+        MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
+        MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
+
+        final String caneLengthMeasurementId = caneLengthText.getMeasurementId();
+        final String caneDiameterMeasurementId = caneDiameterText.getMeasurementId();
+
+        String caneDiameterMeasurement = caneDiameterText.getText().toString();
+        String caneLengthMeasurement = caneLengthText.getText().toString();
+        String caneId = ((TextView) findViewById(R.id.id)).getText().toString();
+        
+        Date date = new Date();
+
+        String metaData = "{'Date':'" + DateFormat.format("dd/mm/yyyy",date) + "','Time':'" + DateFormat.format("hh:mm",date) + "','User':'Garfield'}";
+
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+
+        if(dataEdit){
+            debugUtil.logMessage(TAG,"Updating values for cane " + caneId, run_environment);
+            String queryLength = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
+            " = " + caneLengthMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
+            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
+            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneLengthMeasurementId;
+
+            String queryDiameter = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
+            " = " + caneDiameterMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
+            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
+            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneDiameterMeasurementId;
+
+            try{
+                db.execSQL(queryLength);
+                db.execSQL(queryDiameter);
+            } catch (Exception e){
+                debugUtil.logMessage(TAG, "Error updating " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                return;
+            }
+
+            debugUtil.logMessage(TAG, "Data has been updated for cane " + caneId, run_environment);
+        } else{
+            debugUtil.logMessage(TAG,"Saving new data", DebugUtil.LOG_LEVEL_INFO, run_environment);
+            ContentValues values = new ContentValues();
+
+            // construct caneLength observation
+            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,caneLengthText.getMeasurementId());
+            values.put(DbObservations.OBSERVATIONS_CANE_ID_TITLE, caneId);
+            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneLengthMeasurement);
+            values.put(DbObservations.OBSERVATIONS_METADATA_TITLE, metaData);
+            values.put(DbObservations.OBSERVATIONS_CHANGED_TITLE, true);
+
+            long rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
+
+            debugUtil.logMessage(TAG, "Saved length: " + rowId, run_environment);
+
+            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, caneDiameterText.getMeasurementId());
+            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneDiameterMeasurement);
+
+            rowId = -1;
+            rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
+
+            debugUtil.logMessage(TAG, "Saved diameter: " + rowId, run_environment);
+        }
+    }
+
+    public void copyDatabase(View v){
+       debugUtil.logMessage(TAG, "Try to copy db", run_environment);
+        try{
+            File sd = Environment.getExternalStorageDirectory();
+            File internal = Environment.getDataDirectory();
+
+            if(sd.canWrite()){
+                debugUtil.logMessage(TAG, "Can write", run_environment);
+                debugUtil.logMessage(TAG, "Data path: " + internal.toString(), run_environment);
+                File deviceDb = new File(internal,"/user/0/echo.rootstockapp/databases/HandHeld.db");
+                File newDb = new File("/sdcard/HandHeld.db");
+
+                if(deviceDb.exists()){
+                   debugUtil.logMessage(TAG, "Db exists", run_environment);
+                    FileChannel src = new FileInputStream(deviceDb).getChannel();
+                    FileChannel dst = new FileOutputStream(newDb).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                }
+            } 
+        } catch (Exception e){
+            debugUtil.logMessage(TAG, "Error copying Db: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        }
+    }
+
+    public void updateIdentifierFields(final Cursor c){
+        final TextView textId = (TextView) findViewById(R.id.id);
+        final TextView textBarcode = (TextView) findViewById(R.id.barcode);
+        //final TextView textType = (TextView) findViewById(R.id.type);
+        //final TextView textSite = (TextView) findViewById(R.id.site);
+        //final TextView textBlock = (TextView) findViewById(R.id.block);
+        final TextView textFPI = (TextView) findViewById(R.id.FPI);
+        final TextView textCultivar = (TextView) findViewById(R.id.cultivar);
+        //final TextView textGraftYear = (TextView) findViewById(R.id.graftyear);
+
+        final long caneId = c.getLong(c.getColumnIndexOrThrow(DbIdentifiers._ID));
+        final String barcode = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BARCODE_TITLE));
+        //final String type = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_TYPE_TITLE));
+        //final String site = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_SITE_TITLE));
+        //final String block = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BLOCK_TITLE));
+        final String FPI = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_FPI_TITLE));
+        final String cultivar = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE));
+        //final String graftYear = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE));
+
+       
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run(){
+                ((MeasurementText) findViewById(R.id.cane_length)).setText("");
+                ((MeasurementText) findViewById(R.id.cane_diameter)).setText("");
+                textId.setText(Long.toString(caneId));
+                textBarcode.setText(barcode);
+                //textType.setText(type);
+                //textSite.setText(site);
+                //textBlock.setText(block);
+                textFPI.setText(FPI);
+                textCultivar.setText(cultivar);
+                //textGraftYear.setText(graftYear);
+            }
+        });
+        
     }
     
+    */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DbContract.DbIdentifiers.SQL_CREATE_IDENTIFIERS);

@@ -1,14 +1,13 @@
 {
     "sourcePath": [
-        "src\\androidTest\\java",
-        "src\\debug\\java",
-        "src\\main\\java",
-        "src\\release\\java",
-        "src\\test\\java",
-        "src\\testDebug\\java",
-        "src\\testRelease\\java",
-        "libs"
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\androidTest\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\debug\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\main\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\release\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\test\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\testDebug\\java",
+        "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\src\\testRelease\\java"
     ],
-    "classPathFile": "build\\classpath.txt",
-    "outputDirectory": "build\\vscode-classes"
+    "classPathFile": "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\build\\classpath.txt",
+    "outputDirectory": "C:\\Users\\hrtpxs\\Documents\\Android\\FDC_APP\\RootstockApp\\app\\build\\vscode-classes"
 }

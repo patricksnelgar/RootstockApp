@@ -1,40 +1,30 @@
 package echo.rootstockapp;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.format.DateFormat;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
-import android.view.View;
-import android.widget.Toast;
-import echo.rootstockapp.DbContract.DbObservations;
-import com.honeywell.aidc.*;
-import com.honeywell.aidc.AidcManager.CreatedCallback;
-import com.honeywell.aidc.BarcodeReader.BarcodeListener;
-import echo.rootstockapp.DbContract.DbIdentifiers;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.Toast;
+import echo.rootstockapp.LoadDataDialog.OnIdentifierDataReceivedListener;
+import java.io.File;
 
 /*
  * Entry point for the application, has a basic set of text views to hold info pulled from db.
  * Constructs and configures a scanner object for various barcode types.
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AppLoginFragment.OnLoginVerifyListener, LoadDataDialog.OnIdentifierDataReceivedListener{
     final String TAG = "echo.rootstock";
 
     private String API_URL;
@@ -42,37 +32,45 @@ public class MainActivity extends AppCompatActivity {
     private String API_pw;
     private String run_environment;
 
-    private DebugUtil debugUtil = new DebugUtil();
-    private boolean dev = false;
+    private int formIndex = -1;
 
-    private BarcodeReader barcodeReader;
-    private AidcManager aidcManager;
+    private DebugUtil debugUtil = new DebugUtil();
+    private ScannerManager scannerManager;
+
     private DbHelper databaseHelper;
     private Button buttonSave;
 
-    private boolean hasScanner = false;
-    private boolean managerCreated = false;
     private boolean dataEdit = false;
+    private boolean lockMenu = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         getSupportActionBar().setTitle(R.string.app_name); 
 
         if(!loadConfig()){
             Toast.makeText(this,"Could not load config, exiting.", Toast.LENGTH_LONG).show();
             finish();
-        }        
+        }  
+
+        // If this is the first time running the app, load the PIN lock fragment
+        if(savedInstanceState == null){
+            loadFragment(new AppLoginFragment());
+            invalidateOptionsMenu();            
+        }
+
+        scannerManager = new ScannerManager(getApplicationContext(), debugUtil, run_environment);
+        databaseHelper = new DbHelper(getApplicationContext(), run_environment);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100); //Any number
         }
-        
-        createAidcManager();
 
-        initializeDb();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.INTERNET}, 101); //Any number
+        }        
     }
 
     private boolean loadConfig(){
@@ -84,342 +82,144 @@ public class MainActivity extends AppCompatActivity {
         } catch(Exception e){
             return false;
         }
-        
-        if(run_environment.equals("DEV")){
-            dev = true;
-        }
 
         debugUtil.logMessage(TAG, "configuration loaded: URL <" +
-            API_URL + "> User <" + API_username + "> PW <" + API_pw + "> ENV <" + run_environment + ">", dev);
+            API_URL + "> User <" + API_username + "> PW <" + API_pw + "> ENV <" + run_environment + ">", run_environment);
         
         return true;
     }
 
-    private void createAidcManager(){
-        AidcManager.create(this, new CreatedCallback() {
-            @Override
-            public void onCreated(AidcManager am){
-                             
-                aidcManager = am;
-                if(aidcManager != null){
-                    managerCreated = true;
-                }
-
-                barcodeReader = aidcManager.createBarcodeReader();  
-               
-                if(barcodeReader!=null){
-                    try{
-                    
-                        barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
-                                                    BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
-                        //barcodeReader.setProperty(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
-
-                        Map<String,Object> properties = new HashMap<String,Object>();
-                        properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
-                        properties.put(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
-                        properties.put(BarcodeReader.PROPERTY_PDF_417_ENABLED, true);
-                       // properties.put(BarcodeReader.PROPERTY_CENTER_DECODE, true);
-                        properties.put(BarcodeReader.PROPERTY_NOTIFICATION_BAD_READ_ENABLED, true);
-
-                        barcodeReader.setProperties(properties);
-
-                    } catch (Exception e){
-                        debugUtil.logMessage(TAG, "Could not set property: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, dev);
-                    }
-
-                    hasScanner = claimScanner();
-                    if(hasScanner){
-                        regsiterBarcodeListener();
-                    }
-                } else {
-                    debugUtil.logMessage(TAG,"Could not create Barcode Reader object", DebugUtil.LOG_LEVEL_ERROR, dev);
-                }
-                      
-            }
-        });
+    private void loadFragment(Fragment f){
+        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, f).commit();
     }
 
-    private boolean claimScanner(){
-        try{
-            if(barcodeReader != null){
-                barcodeReader.claim();
-            } else if (barcodeReader == null){
-                debugUtil.logMessage(TAG, "reader is null", dev);
-                barcodeReader = aidcManager.createBarcodeReader();
-                barcodeReader.claim();
-            }
-        } catch (ScannerUnavailableException se){
-            debugUtil.logMessage(TAG, "Could not claim scanner.", DebugUtil.LOG_LEVEL_ERROR, dev);
-            return false;
-        }
-
-        return true;
-    }
-
-    private void regsiterBarcodeListener(){
-
-        barcodeReader.addBarcodeListener(new BarcodeListener(){
-
-            @Override
-            public void onBarcodeEvent(BarcodeReadEvent event){
-                debugUtil.logMessage(TAG,"Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, dev);
-                databaseLookup(event.getBarcodeData());
-            }
-
-            public void onFailureEvent(BarcodeFailureEvent fevent){
-                debugUtil.logMessage(TAG, "Barcode failure event", DebugUtil.LOG_LEVEL_ERROR, dev);
-            }
-        });
-    }
-
-    private void initializeDb(){
-        databaseHelper = new DbHelper(getApplicationContext());
-        //SQLiteDatabase db = databaseHelper.getWritableDatabase();
-        //db.execSQL("DROP FROM observations");
-        //db.execSQL("DROP TABLE " + DbObservations.OBSERVATIONS_TABLE_NAME);
-        //db.execSQL("DELETE FROM identifiers");
-        //db.execSQL(DbContract.DUMMY_DATA);
-    }
-
-    public void databaseLookup(String barcode){
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        
-        String[] columns = {
-            DbIdentifiers._ID,
-            DbIdentifiers.IDENTIFIERS_BARCODE_TITLE,
-            DbIdentifiers.IDENTIFIERS_TYPE_TITLE,
-            DbIdentifiers.IDENTIFIERS_SITE_TITLE,
-            DbIdentifiers.IDENTIFIERS_BLOCK_TITLE,
-            DbIdentifiers.IDENTIFIERS_FPI_TITLE,
-            DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE,
-            DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE
-
-        };
-
-        String columnFilter = DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + " = ?";
-        String[] columnValues = {barcode};
-
-        Cursor c = db.query(
-            DbIdentifiers.IDENTIFIERS_TABLE_NAME,
-            columns,
-            columnFilter,
-            columnValues,
-            null,
-            null,
-            null
-        );
-
-        debugUtil.logMessage(TAG, "Got rows from DB:" + c.getCount(), dev);
-        if(c.getCount() != 1 && c.getCount() > 0){
-            debugUtil.logMessage(TAG, "Got too many rows from db", DebugUtil.LOG_LEVEL_ERROR, dev);            
+    public void changeForm(){
+        if(formIndex < 0){
+            debugUtil.logMessage(TAG, "Form index invalid", run_environment);
             return;
         }
-        try {
-            c.moveToNext();
-            updateIdentifierFields(c);
-        } catch (Exception e){
-            Log.e(TAG, e.getLocalizedMessage());
-        }
-
-        columns = new String[]{
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
-            DbObservations.OBSERVATIONS_VALUE_TITLE
-        };
-
-        columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
-        columnValues = new String[]{c.getString(c.getColumnIndexOrThrow(DbIdentifiers._ID))};
-
-        final Cursor cur = db.query(
-            DbObservations.OBSERVATIONS_TABLE_NAME,
-            columns,
-            columnFilter,
-            columnValues,
-            null,
-            null,
-            null
-        );
-
-        if(cur.getCount() > 0){
-            dataEdit = true;
-            debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], dev);
-            final MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
-            final MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
-            final String caneLengthId = caneLengthText.getMeasurementId();
-            final String caneDiameterId = caneDiameterText.getMeasurementId();
-            
-            
-
-            for(int i = 0; i < cur.getCount(); i++){
-                cur.moveToNext();
-                String measureId = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
-                final String measureValue = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
-
-                if(measureId.equals(caneLengthId)){ 
-                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> length ID <" + caneLengthId +
-                            "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, dev);
-                    runOnUiThread(new Runnable(){
-                        @Override
-                        public void run(){
-                            caneLengthText.setText(measureValue);
-                        }
-                    });                    
-                }else if(measureId.equals(caneDiameterId)){
-                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> diameter ID <" + caneDiameterId +
-                        "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, dev);
-                    runOnUiThread(new Runnable(){
-                        @Override
-                        public void run(){
-                            caneDiameterText.setText(measureValue);
-                        }
-                    });                    
-                }
-                
-            }         
-        } else {
-            dataEdit = false;
-        }
-    }
-
-    public void saveData(View v){
-       debugUtil.logMessage(TAG, "Is edit? " + dataEdit, dev);
-
-        MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
-        MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
-
-        final String caneLengthMeasurementId = caneLengthText.getMeasurementId();
-        final String caneDiameterMeasurementId = caneDiameterText.getMeasurementId();
-
-        String caneDiameterMeasurement = caneDiameterText.getText().toString();
-        String caneLengthMeasurement = caneLengthText.getText().toString();
-        String caneId = ((TextView) findViewById(R.id.id)).getText().toString();
-        
-        Date date = new Date();
-
-        String metaData = "{'Date':'" + DateFormat.format("dd/mm/yyyy",date) + "','Time':'" + DateFormat.format("hh:mm",date) + "','User':'Garfield'}";
-
-        SQLiteDatabase db = databaseHelper.getWritableDatabase();
-
-        if(dataEdit){
-            debugUtil.logMessage(TAG,"Updating values for cane " + caneId, dev);
-            String queryLength = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
-            " = " + caneLengthMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneLengthMeasurementId;
-
-            String queryDiameter = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
-            " = " + caneDiameterMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneDiameterMeasurementId;
-
-            try{
-                db.execSQL(queryLength);
-                db.execSQL(queryDiameter);
-            } catch (Exception e){
-                debugUtil.logMessage(TAG, "Error updating " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, dev);
-                return;
+        try{                
+            String[] formArray = getResources().getStringArray(R.array.forms);
+            String formName = formArray[formIndex];
+            debugUtil.logMessage(TAG,"User wants to load: <" + formName + ">", run_environment);
+            switch(formName){
+                case "Cane info":
+                    loadFragment(new CaneInfoFragment());
+                    break;
+                default:
+                    setContentView(R.layout.activity_main);
             }
-
-            debugUtil.logMessage(TAG, "Data has been updated for cane " + caneId, dev);
-        } else{
-            debugUtil.logMessage(TAG,"Saving new data", DebugUtil.LOG_LEVEL_INFO, dev);
-            ContentValues values = new ContentValues();
-
-            // construct caneLength observation
-            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,caneLengthText.getMeasurementId());
-            values.put(DbObservations.OBSERVATIONS_CANE_ID_TITLE, caneId);
-            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneLengthMeasurement);
-            values.put(DbObservations.OBSERVATIONS_METADATA_TITLE, metaData);
-            values.put(DbObservations.OBSERVATIONS_CHANGED_TITLE, true);
-
-            long rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
-
-            debugUtil.logMessage(TAG, "Saved length: " + rowId, dev);
-
-            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, caneDiameterText.getMeasurementId());
-            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneDiameterMeasurement);
-
-            rowId = -1;
-            rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
-
-            debugUtil.logMessage(TAG, "Saved diameter: " + rowId, dev);
-        }
-    }
-
-    public void copyDatabase(View v){
-       debugUtil.logMessage(TAG, "Try to copy db", dev);
-        try{
-            File sd = Environment.getExternalStorageDirectory();
-            File internal = Environment.getDataDirectory();
-
-            if(sd.canWrite()){
-                debugUtil.logMessage(TAG, "Can write", dev);
-                debugUtil.logMessage(TAG, "Data path: " + internal.toString(), dev);
-                File deviceDb = new File(internal,"/user/0/echo.rootstockapp/databases/HandHeld.db");
-                File newDb = new File("/sdcard/HandHeld.db");
-
-                if(deviceDb.exists()){
-                   debugUtil.logMessage(TAG, "Db exists", dev);
-                    FileChannel src = new FileInputStream(deviceDb).getChannel();
-                    FileChannel dst = new FileOutputStream(newDb).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-                }
-            } 
         } catch (Exception e){
-            debugUtil.logMessage(TAG, "Error copying Db: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, dev);
+            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
         }
     }
 
-    public void updateIdentifierFields(final Cursor c){
-        final TextView textId = (TextView) findViewById(R.id.id);
-        final TextView textBarcode = (TextView) findViewById(R.id.barcode);
-        //final TextView textType = (TextView) findViewById(R.id.type);
-        //final TextView textSite = (TextView) findViewById(R.id.site);
-        //final TextView textBlock = (TextView) findViewById(R.id.block);
-        final TextView textFPI = (TextView) findViewById(R.id.FPI);
-        final TextView textCultivar = (TextView) findViewById(R.id.cultivar);
-        //final TextView textGraftYear = (TextView) findViewById(R.id.graftyear);
+    private void showFormSelectionDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        final long caneId = c.getLong(c.getColumnIndexOrThrow(DbIdentifiers._ID));
-        final String barcode = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BARCODE_TITLE));
-        //final String type = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_TYPE_TITLE));
-        //final String site = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_SITE_TITLE));
-        //final String block = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_BLOCK_TITLE));
-        final String FPI = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_FPI_TITLE));
-        final String cultivar = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE));
-        //final String graftYear = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE));
-
-       
-        runOnUiThread(new Runnable() {
+        builder.setTitle("Form selection")
+                .setSingleChoiceItems(R.array.forms, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int index){
+                        debugUtil.logMessage(TAG, "User selected: <" + index + ">", run_environment);
+                        setFormIndex(index);
+                    }
+                });
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
-            public void run(){
-                ((MeasurementText) findViewById(R.id.cane_length)).setText("");
-                ((MeasurementText) findViewById(R.id.cane_diameter)).setText("");
-                textId.setText(Long.toString(caneId));
-                textBarcode.setText(barcode);
-                //textType.setText(type);
-                //textSite.setText(site);
-                //textBlock.setText(block);
-                textFPI.setText(FPI);
-                textCultivar.setText(cultivar);
-                //textGraftYear.setText(graftYear);
+            public void onClick(DialogInterface dialog, int id){
+                debugUtil.logMessage(TAG, "User clicked: " + id, run_environment);
+                changeForm();
             }
         });
-        
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                debugUtil.logMessage(TAG,"User clicked: " + id, run_environment);
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void setFormIndex(int index) {
+        debugUtil.logMessage(TAG, "Index changed: <" + formIndex+"> -> <" + index +">", run_environment);
+        formIndex = index;
+    }
+
+    @Override
+    public void onLoginVerify(boolean verified){
+        lockMenu = !verified;
+        if(verified){           
+            // Load blank content so PIN screen is not shown again
+            setContentView(R.layout.activity_main);
+            showFormSelectionDialog();
+            invalidateOptionsMenu();
+        }
+    }
+
+    @Override
+    public boolean writeIdentifierData(File f){
+        debugUtil.logMessage(TAG, "user wants to write local db", run_environment);
+        if(databaseHelper.insertIdentifiers(f)){
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater i = getMenuInflater();
+        i.inflate(R.menu.menu, menu);
+        if(lockMenu){
+            // Disable menu items that should not be accessible,
+            // eg. PFR login
+            menu.findItem(R.id.menu_load_data).setEnabled(false);
+            menu.findItem(R.id.menu_authenticate).setEnabled(false);
+            menu.findItem(R.id.menu_change_form).setEnabled(false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_authenticate:
+                debugUtil.logMessage(TAG,"User wants to authenticate", run_environment);
+                NetworkLoginDialog n = new NetworkLoginDialog();
+                n.setConfig(API_URL, run_environment);
+                n.show(getSupportFragmentManager(), "PFR_ Login");
+                return true;
+            case R.id.menu_load_data:
+                LoadDataDialog d = new LoadDataDialog();
+                d.setConfig(API_URL, run_environment);
+                d.show(getSupportFragmentManager(), "Load data");
+                break;
+            case R.id.menu_change_form:
+                showFormSelectionDialog();
+                return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        // re-enable menu options once the app has been 'unlocked' via PIN
+        menu.findItem(R.id.menu_authenticate).setEnabled(!lockMenu);
+        menu.findItem(R.id.menu_load_data).setEnabled(!lockMenu);
+        menu.findItem(R.id.menu_change_form).setEnabled(!lockMenu);
+        return true;
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
 
-        if(barcodeReader != null){
-            barcodeReader.release();
-        }
-
-        if(aidcManager != null){
-            aidcManager.close();
-        }
+        scannerManager.onDestroy();
 
         if(databaseHelper != null){
             databaseHelper.close();

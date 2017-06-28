@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    
+    <include layout="@layout/form_header_layout"
+        android:id="@+id/include" />
+
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/row_cane_measurements"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_below="@+id/include"
+        android:layout_alignParentStart="true">
+
+        <RelativeLayout
+            android:id="@+id/cane_length_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:paddingTop="12dp"
+                android:paddingRight="8dp"
+                android:text="cm" />
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <echo.rootstockapp.MeasurementText
+                    android:id="@+id/cane_length"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:inputType="number|numberDecimal"
+                    android:maxLines="1"
+                    android:maxLength="20"
+                    android:hint="Cane length"
+                    android:nextFocusDown="@+id/cane_diameter"
+                    custom:measurement_id="1"/>
+
+            </android.support.design.widget.TextInputLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_diameter_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cane_length_holder">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="8dp"
+                android:paddingTop="12dp"
+                android:text="mm"/>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <echo.rootstockapp.MeasurementText
+                    android:id="@+id/cane_diameter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:hint="Cane diameter"
+                    android:inputType="number|numberDecimal"
+                    android:maxLines="1"
+                    android:maxLength="20"
+                    android:nextFocusUp="@+id/cane_length"
+                    custom:measurement_id="2" />
+            </android.support.design.widget.TextInputLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/cane_exists_holder"
+            android:layout_below="@+id/cane_diameter_holder"
+            android:paddingBottom="8dp"
+            android:paddingTop="16dp"
+            android:paddingStart="5dp">
+
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/cane_exists"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/cane_exists_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_weight="1"
+                android:text="Cane exists in field?"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_development_holder"
+            android:layout_below="@+id/cane_exists_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/radioGroup">
+                <RadioButton
+                        android:id="@+id/radio_early"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true" />
+                <RadioButton
+                        android:id="@+id/radio_late"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true" />
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/radio_early_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fruit stalk / Early"
+                android:textSize="18sp"
+                android:paddingTop="6dp"
+                android:paddingLeft="5dp"
+                android:paddingBottom="4dp"
+                android:layout_alignParentTop="true" />
+
+            <TextView
+                android:id="@+id/radio_late_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Late developed"
+                android:textSize="18sp"
+                android:paddingTop="6dp"
+                android:paddingLeft="5dp"
+                android:paddingBottom="4dp"
+                android:layout_below="@+id/radio_early_label" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <!-- <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="saveData"
+        android:text="Save"/>
+    <Button
+        android:id="@+id/buttonCopyDb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:onClick="copyDatabase"
+        android:text="Copy DB"/> -->*
+</RelativeLayout>

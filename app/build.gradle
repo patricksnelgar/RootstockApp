@@ -17,44 +17,42 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    // for vs code android library reference import
-    /*task vscodeClasspathFile {
-        description 'Generates classpath file for the Visual Studio Code java plugin'
-        ext.destFile = file("$buildDir/classpath.txt")
-        outputs.file destFile
-        doLast {
-            def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
-            if (!destFile.parentFile.exists()) {
-                destFile.parentFile.mkdirs()
-            }
-            assert destFile.parentFile.exists()
-            destFile.text = classpathString
+    task vscodeClasspathFile {
+    description 'Generates classpath file for the Visual Studio Code java plugin'
+    ext.destFile = file("$buildDir/classpath.txt")
+    outputs.file destFile
+    doLast {
+        def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
+        if (!destFile.parentFile.exists()) {
+            destFile.parentFile.mkdirs()
         }
+        assert destFile.parentFile.exists()
+        destFile.text = classpathString
     }
+}
 
-    task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
-        description 'Generates javaconfig.json file for the Visual Studio Code java plugin'
+task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
+    description 'Generates javaconfig.json file for the Visual Studio Code java plugin'
 
-        def relativePath = { File f ->
-            f.absolutePath - "${project.rootDir.absolutePath}/"
-        }
-        ext.destFile = file("javaconfig.json")
-        ext.config = [
-            sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
-            classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
-            outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
-        ]
-        doLast {
-            def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
-            destFile.text = groovy.json.JsonOutput.prettyPrint(jsonContent)
-        }
+    def relativePath = { File f ->
+        f.absolutePath - "${project.rootDir.absolutePath}/"
     }
+    ext.destFile = file("javaconfig.json")
+    ext.config = [
+        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
+        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
+        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
+    ]
+    doLast {
+        def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
+        destFile.text = groovy.json.JsonOutput.prettyPrint(jsonContent)
+    }
+}
 
-    task vscode(dependsOn: vscodeJavaconfigFile) {
-        description 'Generates config files for the Visual Studio Code java plugin'
-        group 'vscode'
-    }*/
+task vscode(dependsOn: vscodeJavaconfigFile) {
+    description 'Generates config files for the Visual Studio Code java plugin'
+    group 'vscode'
+}
 }
 
 dependencies {
@@ -62,6 +60,11 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'cz.msebera.android:httpclient:4.4.1.2'
+    compile 'com.android.support:design:25.3.1'
     testCompile 'junit:junit:4.12'
 }
