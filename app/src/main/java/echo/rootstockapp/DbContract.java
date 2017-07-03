@@ -1,43 +1,63 @@
 package echo.rootstockapp;
 
 import android.provider.BaseColumns;
-import echo.rootstockapp.DbContract.DbIdentifiers;
-import echo.rootstockapp.DbContract.DbObservations;
 
 public final class DbContract {
 
-    public static final String DUMMY_DATA = "INSERT INTO identifiers (" + DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + "," + 
-        DbIdentifiers.IDENTIFIERS_TYPE_TITLE + "," + DbIdentifiers.IDENTIFIERS_SITE_TITLE + "," +
-        DbIdentifiers.IDENTIFIERS_BLOCK_TITLE + "," + DbIdentifiers.IDENTIFIERS_FPI_TITLE + "," + 
-        DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE  + "," + DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE + ")" +
-        "VALUES ('C.23138', 'Cane', 'TePuke', '1', 'G14.01-09-18a', 'R039', '14')," + 
-               "('C.23035', 'Cane', 'TePuke', '1', 'G14.01-03-20a', 'Y097', '14')," +
-               "('C.23424', 'Cane', 'TePuke', '3', 'G09.03-26-25b', 'MC089', '09')," +
-               "('C.23306', 'Cane', 'TePuke', '2', 'G14.02-17-23a', 'G096', '14')," +
-               "('C.23099', 'Cane', 'TePuke', '1', 'G14.01-07-08a', 'R037', '14')," +
-               "('G14.01-09-11a', 'Vine', 'TePuke', '1', 'G14.01-09-11a', 'R45', '14')";
+    public  class IdentifierColumnNames {
+        public static final String _ID = "_id";
+        public static final String BARCODE_TITLE = "barcode";
+        public static final String TYPE_TITLE = "type";
+        public static final String SITE_TITLE = "site";
+        public static final String BLOCK_TITLE = "block";
+        public static final String FPI_TITLE = "FPI";
+        public static final String CULTIVAR_TITLE = "cultivar";
+        public static final String GRAFT_YEAR_TITLE = "graft_year";
+
+    }
 
     private void DBContract() {}
 
-    public static class DbIdentifiers implements BaseColumns {
-        public static final String SQL_CREATE_IDENTIFIERS = "Create table " + DbIdentifiers.IDENTIFIERS_TABLE_NAME + 
-            " (" + DbIdentifiers._ID + " Integer Primary Key," +
-            DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_TYPE_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_SITE_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_BLOCK_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_FPI_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE + " Text," +
-            DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE + " Text)";
+    public static class DbComponentIdentifiers implements BaseColumns {
+        public static final String SQL_CREATE_TABLE = "Create table " + DbComponentIdentifiers.TABLE_NAME + 
+            " (" + DbComponentIdentifiers._ID + " Integer Primary Key," +
+            DbComponentIdentifiers.BARCODE_TITLE + " Text," +
+            DbComponentIdentifiers.TYPE_TITLE + " Text," +
+            DbComponentIdentifiers.SITE_TITLE + " Text," +
+            DbComponentIdentifiers.BLOCK_TITLE + " Text," +
+            DbComponentIdentifiers.FPI_TITLE + " Text," +
+            DbComponentIdentifiers.CULTIVAR_TITLE + " Text," +
+            DbComponentIdentifiers.GRAFT_YEAR_TITLE + " Text)";
 
-        public static final String IDENTIFIERS_TABLE_NAME = "identifiers";
-        public static final String IDENTIFIERS_BARCODE_TITLE = "barcode";
-        public static final String IDENTIFIERS_TYPE_TITLE = "type";
-        public static final String IDENTIFIERS_SITE_TITLE = "site";
-        public static final String IDENTIFIERS_BLOCK_TITLE = "block";
-        public static final String IDENTIFIERS_FPI_TITLE = "FPI";
-        public static final String IDENTIFIERS_CULTIVAR_TITLE = "cultivar";
-        public static final String IDENTIFIERS_GRAFT_YEAR_TITLE = "graft_year";
+        public static final String TABLE_NAME = "component_identifiers";
+        public static final String BARCODE_TITLE = "barcode";
+        public static final String TYPE_TITLE = "type";
+        public static final String SITE_TITLE = "site";
+        public static final String BLOCK_TITLE = "block";
+        public static final String FPI_TITLE = "FPI";
+        public static final String CULTIVAR_TITLE = "cultivar";
+        public static final String GRAFT_YEAR_TITLE = "graft_year";
+    }
+
+    public static class DbCaneIdentifiers implements BaseColumns {
+        public static final String SQL_CREATE_TABLE = "Create table " + DbCaneIdentifiers.TABLE_NAME + 
+            " (" + DbCaneIdentifiers._ID + " Integer Primary Key," +
+            DbCaneIdentifiers.BARCODE_TITLE + " Text," +
+            DbCaneIdentifiers.TYPE_TITLE + " Text," +
+            DbCaneIdentifiers.SITE_TITLE + " Text," +
+            DbCaneIdentifiers.BLOCK_TITLE + " Text," +
+            DbCaneIdentifiers.FPI_TITLE + " Text," +
+            DbCaneIdentifiers.CULTIVAR_TITLE + " Text," +
+            DbCaneIdentifiers.GRAFT_YEAR_TITLE + " Text)";
+
+        public static final String TABLE_NAME = "cane_identifiers";
+        public static final String BARCODE_TITLE = "barcode";
+        public static final String TYPE_TITLE = "type";
+        public static final String SITE_TITLE = "site";
+        public static final String BLOCK_TITLE = "block";
+        public static final String FPI_TITLE = "FPI";
+        public static final String CULTIVAR_TITLE = "cultivar";
+        public static final String GRAFT_YEAR_TITLE = "graft_year";
     }
 
     public static class DbObservations implements BaseColumns {

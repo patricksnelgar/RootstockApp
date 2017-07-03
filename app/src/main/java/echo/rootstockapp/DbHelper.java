@@ -1,66 +1,149 @@
 package echo.rootstockapp;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import echo.rootstockapp.DbContract.DbIdentifiers;
-import echo.rootstockapp.DbContract.DbObservations;
+import android.os.AsyncTask;
+import echo.rootstockapp.DbContract.*;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.LineNumberReader;
 import java.io.FileReader;
 import java.util.Arrays;
 
-import echo.rootstockapp.DbContract.DbIdentifiers;
-
 public class DbHelper extends SQLiteOpenHelper {
     private final String TAG = DbHelper.class.getSimpleName();
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 11;
     public static final String DATABASAE_NAME = "HandHeld.db";
     private String run_environment;
     private DebugUtil debugUtil;
 
-    public DbHelper(Context context, String env) {
+    private DbProgressListener dbProgressListener;
+
+    public interface DbProgressListener {
+        public void updateProgress(int progress, int total);
+        public void setProgressText(String message);
+        public void setResponseTextPositive(String message);
+        public void setResponseTextNegative(String message);
+    }
+
+    
+
+    public DbHelper(Context context, String env, DbProgressListener l) {
+        super(context, DATABASAE_NAME, null, DATABASE_VERSION);
+        run_environment = env;
+        debugUtil = new DebugUtil();
+        dbProgressListener = (DbProgressListener) l;
+    }
+
+        public DbHelper(Context context, String env) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
         run_environment = env;
         debugUtil = new DebugUtil();
     }
 
-    public boolean insertIdentifiers(File f){
-        try{
-            BufferedReader br = new BufferedReader(new FileReader(f));
-            String[] headers = br.readLine().split(",");
-            debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
-            SQLiteDatabase db = this.getWritableDatabase();
-            String[] input = br.readLine().split(",");
-            
-            debugUtil.logMessage(TAG, "headers:"+headers.length+" first row:" + input.length, run_environment);
-            debugUtil.logMessage(TAG, "Input: <" + Arrays.toString(input) + ">", run_environment);
-            /*
-            db.execSQL("INSERT INTO " + DbIdentifiers.IDENTIFIERS_TABLE_NAME + " (" +  
-                DbIdentifiers._ID + "," + DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + "," + 
-                DbIdentifiers.IDENTIFIERS_TYPE_TITLE + "," + DbIdentifiers.IDENTIFIERS_SITE_TITLE + "," +
-                DbIdentifiers.IDENTIFIERS_BLOCK_TITLE + "," + DbIdentifiers.IDENTIFIERS_FPI_TITLE + "," + 
-                DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE  + "," + DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE + ")" +
-                "VALUES (" + 
-                    input[0] + "," + input[1] + "," + input[2] + "," + input[3] + "," + input[4] + "," +
-                    input[5] + "," + input[6] + "," + input[7] +")");
-                    */
-        } catch (Exception e){
-            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
-        }
+    public boolean insertIdentifiers(final File f){
+       
+        dbProgressListener.setProgressText("Writing to DB:");
+        final SQLiteDatabase db = this.getWritableDatabase();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run(){
+                try{
+                    LineNumberReader lr = new LineNumberReader(new FileReader(f));
+                    lr.skip(Long.MAX_VALUE);
+                    int maxCount = lr.getLineNumber();
+                    BufferedReader br = new BufferedReader(new FileReader(f));
+                    String[] headers = br.readLine().split(",");
+                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
+                   
+
+                    // Clear all records from the db for now
+                    db.execSQL("DELETE FROM " + DbCaneIdentifiers.TABLE_NAME);
+                    db.execSQL("DELETE FROM " + DbComponentIdentifiers.TABLE_NAME);
+                    db.beginTransaction();
+
+                    ContentValues _v = new ContentValues();
+
+                    long startTime = System.currentTimeMillis();
+
+                    int count = 0;
+                    long rowID;
+                    String line = "";
+
+                    while(true){
+                        line = br.readLine();
+                        if(line == null) break;
+                        String[] input = line.split(",",-1);
+                        
+                        _v.put(IdentifierColumnNames._ID, input[0]);
+                        _v.put(IdentifierColumnNames.BARCODE_TITLE, input[1]);
+                        _v.put(IdentifierColumnNames.TYPE_TITLE, input[2]);
+                        _v.put(IdentifierColumnNames.SITE_TITLE, input[3]);
+                        _v.put(IdentifierColumnNames.BLOCK_TITLE, input[4]);
+                        _v.put(IdentifierColumnNames.FPI_TITLE, input[5]);
+                        _v.put(IdentifierColumnNames.CULTIVAR_TITLE, input[6]);
+                        _v.put(IdentifierColumnNames.GRAFT_YEAR_TITLE, input[7]);
+
+                   
+
+                        switch (input[2]){
+                            case "cane":
+                                rowID = db.insert(DbCaneIdentifiers.TABLE_NAME, null, _v);
+                                if(rowID!=-1) count++;
+                                break;
+                            case "component":
+                                rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v); 
+                                if(rowID!=-1) count++;
+                                break;
+                        }
+                        dbProgressListener.updateProgress(count, maxCount);          
+                    }
+                    db.setTransactionSuccessful();
+                    long endTime = System.currentTimeMillis();
+                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount-1) +") records: " + (endTime - startTime) + "ms", run_environment);
+                    if(count != maxCount-1){
+                        dbProgressListener.setResponseTextNegative("Failed to insert all records");
+                    } else {
+                        dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
+                        //dbProgressListener.writeSuccessfull();
+                    }
+                } catch (Exception e){
+                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                } finally {
+                    db.endTransaction();
+                }
+            }
+        }).start();
+
+             /*
+                        if(input[2].equals("cane")){                            
+                            long rowID = db.insert(DbCaneIdentifiers.TABLE_NAME, null, _v);
+                            if(rowID!=-1) count++;
+                        } else if(input[2].equals("component")) {                            
+                            long rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v); 
+                            if(rowID!=-1) count++;
+                        } 
+                        */
+        
         return false;
     }
 
-    /*
-    private void initializeDb(){
-        //databaseHelper = new DbHelper(getApplicationContext());
-        //SQLiteDatabase db = databaseHelper.getWritableDatabase();
-        //db.execSQL("DROP FROM observations");
-        //db.execSQL("DROP TABLE " + DbObservations.OBSERVATIONS_TABLE_NAME);
-        //db.execSQL("DELETE FROM identifiers");
-        //db.execSQL(DbContract.DUMMY_DATA);
+    private String buildInputValues(String[] input, int limit){
+        if(input.length == 0) return null;
+
+        String _r = "\"" + input[0] + "\"";
+        for(int i = 1; i < limit; i++)
+            _r += "," +  "\"" + input[i] + "\"";      
+
+        //debugUtil.logMessage(TAG, "value string: " + _r, run_environment);
+
+        return _r;
     }
 
+    /*
     public void databaseLookup(String barcode){
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         
@@ -292,22 +375,25 @@ public class DbHelper extends SQLiteOpenHelper {
     */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(DbContract.DbIdentifiers.SQL_CREATE_IDENTIFIERS);
         db.execSQL(DbContract.DbObservations.SQL_CREATE_OBSERVATIONS);
-        db.execSQL(DbContract.DUMMY_DATA);
+        db.execSQL(DbContract.DbCaneIdentifiers.SQL_CREATE_TABLE);
+        db.execSQL(DbContract.DbComponentIdentifiers.SQL_CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //db.execSQL("DELETE FROM identifiers");
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbIdentifiers.IDENTIFIERS_TABLE_NAME);
+        debugUtil.logMessage(TAG, "Upgrading DB", run_environment);        
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbCaneIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
         onCreate(db);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbIdentifiers.IDENTIFIERS_TABLE_NAME);
+        debugUtil.logMessage(TAG, "Downgrading DB", run_environment);
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbCaneIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
         onCreate(db);
     }

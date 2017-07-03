@@ -6,7 +6,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
+import android.util.PrintWriterPrinter;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -14,14 +16,19 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
+import echo.rootstockapp.DbHelper.DbProgressListener;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.FileReader;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -35,7 +42,7 @@ import okhttp3.Response;
 import org.json.JSONObject;
 
 
-public class LoadDataDialog extends DialogFragment {
+public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
 
     private final String TAG = LoadDataDialog.class.getSimpleName();
     private final String authourizationKey = "ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d";
@@ -49,11 +56,14 @@ public class LoadDataDialog extends DialogFragment {
     private Spinner spinnerSite;
     private Spinner spinnerBlock;
     private TextView textResponseMessage;
-    private ProgressBar progressBarQuery;
+    private ProgressBar progressBar;
+    private TextView textProgressbarMessage;
+    private RelativeLayout progressBarHolder;
     private boolean isFirstSelection = true; // Need this to prevent data loading when spinner is created
     private String site = null;
     private String block = null;
     private AsyncHttpClient asyncHttpClient;
+    private DbHelper databaseHelper;
 
     List<String> listSites = new ArrayList<String>(Arrays.asList("Choose a site"));
     List<String> listBlocks = new ArrayList<String>(Arrays.asList("Choose a block"));
@@ -71,7 +81,7 @@ public class LoadDataDialog extends DialogFragment {
     public void onAttach(Context context){
         super.onAttach(context);
         try {
-            onIdentifierDataReceivedListener =(OnIdentifierDataReceivedListener) context;
+            onIdentifierDataReceivedListener = (OnIdentifierDataReceivedListener) context;
         } catch (ClassCastException e){
             throw new ClassCastException(context.toString() + " must implement method writeIdentifierData(File f)");
         }
@@ -83,6 +93,8 @@ public class LoadDataDialog extends DialogFragment {
         asyncHttpClient = new AsyncHttpClient();
         asyncHttpClient.addHeader("Authorization", authourizationKey);
 
+        databaseHelper = new DbHelper(getActivity().getApplicationContext(), run_environment, this);
+
         debugUtil = new DebugUtil();
 
         dialog = super.onCreateDialog(savedInstanceState);
@@ -91,7 +103,9 @@ public class LoadDataDialog extends DialogFragment {
         spinnerSite = (Spinner) dialog.findViewById(R.id.spinner_site_picker);
         spinnerBlock = (Spinner) dialog.findViewById(R.id.spinner_block_picker);
         textResponseMessage = (TextView) dialog.findViewById(R.id.text_response_message);
-        progressBarQuery = (ProgressBar) dialog.findViewById(R.id.progress_bar_query);
+        progressBar = (ProgressBar) dialog.findViewById(R.id.progress_bar);
+        progressBarHolder = (RelativeLayout) dialog.findViewById(R.id.progress_holder);
+        textProgressbarMessage = (TextView) dialog.findViewById(R.id.text_progress_bar_label);
 
         ((Button) dialog.findViewById(R.id.button_cancel)).setOnClickListener(onCancelClickListener);
         ((Button) dialog.findViewById(R.id.button_load)).setOnClickListener(onLoadDataClickListener);
@@ -117,13 +131,12 @@ public class LoadDataDialog extends DialogFragment {
 
     private ArrayList<String> loadSites(){
         // Can change to loading from API call
-        textResponseMessage.setVisibility(View.INVISIBLE);
+        hideResponses();
         String[] _t = getActivity().getResources().getStringArray(R.array.sites);
         if(_t.length > 0)
             return new ArrayList<String>(Arrays.asList(_t));
         else {
-            textResponseMessage.setText("Error loading sites.");
-            textResponseMessage.setVisibility(View.VISIBLE);
+            setResponseTextNegative("Error loading sites.");
         }
 
         return new ArrayList<String>();
@@ -131,7 +144,7 @@ public class LoadDataDialog extends DialogFragment {
 
     private ArrayList<String> loadBlocksFromSiteCode(String siteCode){
         // Can change to loading from API call
-        textResponseMessage.setVisibility(View.INVISIBLE);
+        hideResponses();
         debugUtil.logMessage(TAG, "User wants data from: " + siteCode, run_environment);
         switch(siteCode){
             case "TRC":
@@ -144,20 +157,17 @@ public class LoadDataDialog extends DialogFragment {
         }
 
         debugUtil.logMessage(TAG, "No sites", run_environment);
-        textResponseMessage.setText("Error loading blocks.");
-        textResponseMessage.setVisibility(View.VISIBLE);
+        setResponseTextNegative("Error loading blocks");
         return new ArrayList<String>();        
     }
 
     private void makeDataRequest(){
         if(site == null || block == null){
-            textResponseMessage.setText("Specify a site and a block to load data for.");
-            textResponseMessage.setVisibility(View.VISIBLE);
+            setResponseTextNegative("Specify a site and a block to load data for.");
             return;
         }
 
-        textResponseMessage.setVisibility(View.GONE);
-        progressBarQuery.setVisibility(View.VISIBLE);
+        hideResponses();        
 
         // build query for kakapo        
         asyncHttpClient.get(API_URL + "/fdc/download/" + site + "/" + block, new AsyncHttpResponseHandler(){
@@ -167,7 +177,6 @@ public class LoadDataDialog extends DialogFragment {
                 String responseString = new String(response);
                 debugUtil.logMessage(TAG, "onSuccess ["+statusCode+"]: response size<" + responseString.length() + ">", run_environment);
                 if(statusCode == 200 && responseString.length() > 0){
-                    progressBarQuery.setVisibility(View.GONE);
                     debugUtil.logMessage(TAG, "Response is: <" + responseString + ">", run_environment);
                     try {
                     JSONObject json = new JSONObject(responseString);
@@ -190,14 +199,16 @@ public class LoadDataDialog extends DialogFragment {
 
     private void saveIdentifiers(String path){
 
-        asyncHttpClient.get("http://dev.kakapo.pfr.co.nz:8500/"+path, new FileAsyncHttpResponseHandler(getActivity().getApplicationContext()){
+        setProgressText("Downloading data: ");        
+
+        asyncHttpClient.get("http://dev.kakapo.pfr.co.nz:8600/"+path, new FileAsyncHttpResponseHandler(getActivity().getApplicationContext()){
             
             @Override
             public void onSuccess(int statusCode, Header[] headers, File response){
                 debugUtil.logMessage(TAG, "File get code: " + statusCode, run_environment);
                 
                 if(statusCode == 200 && response!=null){
-                    onIdentifierDataReceivedListener.writeIdentifierData(response);
+                    databaseHelper.insertIdentifiers(response);
                 }
             }
 
@@ -205,13 +216,70 @@ public class LoadDataDialog extends DialogFragment {
             public void onFailure(int statusCode, Header[] headers, Throwable error, File response){
                 debugUtil.logMessage(TAG, "File get code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
             }
+
+            @Override
+            public void onProgress(long written, long size){
+                updateProgress((int) written, (int)size);
+            }
         });
 
+    }
+
+    private void hideResponses(){
+        textResponseMessage.setVisibility(View.INVISIBLE);
+        progressBarHolder.setVisibility(View.INVISIBLE);
+    }
+    
+    @Override
+    public void updateProgress(int progress, int total){
+        progressBar.setMax(total);
+        progressBar.setProgress(progress);
+    }
+    
+    @Override
+    public void setProgressText(String t){
+        textResponseMessage.setVisibility(View.INVISIBLE);
+        progressBarHolder.setVisibility(View.VISIBLE);
+        textProgressbarMessage.setText(t);
+    }
+
+    @Override
+    public void setResponseTextPositive(final String message){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                hideResponses();
+                textResponseMessage.setTextColor(getActivity().getResources().getColor(R.color.colorTextSuccess, null));
+                textResponseMessage.setVisibility(View.VISIBLE);
+                textResponseMessage.setText(message);
+            }
+        });
+        
+    }
+
+    @Override
+    public void setResponseTextNegative(final String message){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                hideResponses();
+                textResponseMessage.setTextColor(getActivity().getResources().getColor(R.color.colorTextError, null));
+                textResponseMessage.setVisibility(View.VISIBLE);
+                textResponseMessage.setText(message);
+            }
+        });
     }
 
     public void setConfig(String api, String env){
         API_URL = api;
         run_environment = env;
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(databaseHelper != null)
+            databaseHelper.close();
     }
 
     final AdapterView.OnItemSelectedListener onSiteSelectedListener = new AdapterView.OnItemSelectedListener() {
@@ -225,7 +293,7 @@ public class LoadDataDialog extends DialogFragment {
                 return;
             }
 
-            site =  listSites.get(index);; 
+            site =  listSites.get(index);
             listBlocks.clear(); 
             listBlocks.add("Choose a block");      
             listBlocks.addAll(loadBlocksFromSiteCode(site));

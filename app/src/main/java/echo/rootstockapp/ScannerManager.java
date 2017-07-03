@@ -9,6 +9,7 @@ import com.honeywell.aidc.BarcodeReader;
 import com.honeywell.aidc.BarcodeReader.BarcodeListener;
 import com.honeywell.aidc.ScannerUnavailableException;
 
+import echo.rootstockapp.ScannerManager.BarcodeFoundListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,9 +23,18 @@ public class ScannerManager {
     private String run_environment;
     private boolean hasScanner = false;
 
-    public ScannerManager(Context context, DebugUtil db, String env) {
-        debugUtil = db;
+    private BarcodeFoundListener barcodeListner;
+
+    public interface BarcodeFoundListener {
+        public void onBarcodeFound(String barcode);
+    }
+
+
+
+    public ScannerManager(Context context, String env) {
+        debugUtil = new DebugUtil();
         run_environment = env;
+        barcodeListner = (BarcodeFoundListener) context;
 
         AidcManager.create(context, new CreatedCallback() {
             @Override
@@ -68,8 +78,6 @@ public class ScannerManager {
         });
     }
 
-
-
     private boolean claimScanner(){
         try{
             if(barcodeReader != null){
@@ -94,7 +102,7 @@ public class ScannerManager {
             @Override
             public void onBarcodeEvent(BarcodeReadEvent event){
                 debugUtil.logMessage(TAG,"Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, run_environment);
-                //databaseLookup(event.getBarcodeData());
+                barcodeListner.onBarcodeFound(event.getBarcodeData());
             }
 
             public void onFailureEvent(BarcodeFailureEvent fevent){

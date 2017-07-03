@@ -16,7 +16,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
+import echo.rootstockapp.DbHelper.DbProgressListener;
 import echo.rootstockapp.LoadDataDialog.OnIdentifierDataReceivedListener;
+import echo.rootstockapp.ScannerManager.BarcodeFoundListener;
 import java.io.File;
 
 /*
@@ -24,7 +26,7 @@ import java.io.File;
  * Constructs and configures a scanner object for various barcode types.
  */
 
-public class MainActivity extends AppCompatActivity implements AppLoginFragment.OnLoginVerifyListener, LoadDataDialog.OnIdentifierDataReceivedListener{
+public class MainActivity extends AppCompatActivity implements AppLoginFragment.OnLoginVerifyListener, LoadDataDialog.OnIdentifierDataReceivedListener, ScannerManager.BarcodeFoundListener {
     final String TAG = "echo.rootstock";
 
     private String API_URL;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             invalidateOptionsMenu();            
         }
 
-        scannerManager = new ScannerManager(getApplicationContext(), debugUtil, run_environment);
+        scannerManager = new ScannerManager(getApplicationContext(), run_environment);
         databaseHelper = new DbHelper(getApplicationContext(), run_environment);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -147,6 +149,11 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     public void setFormIndex(int index) {
         debugUtil.logMessage(TAG, "Index changed: <" + formIndex+"> -> <" + index +">", run_environment);
         formIndex = index;
+    }
+
+    @Override
+    public void onBarcodeFound(String barcode){
+        debugUtil.logMessage(TAG, "Looking up barcode: <" + barcode + ">", run_environment);
     }
 
     @Override

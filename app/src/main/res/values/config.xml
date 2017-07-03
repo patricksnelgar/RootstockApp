@@ -1,5 +1,5 @@
 <resources>
-    <string name="API_URL">http://dev.kakapo.pfr.co.nz:8500/API/v1</string>
+    <string name="API_URL">http://dev.kakapo.pfr.co.nz:8600/API/v1</string>
     <string name="API_username">User</string>
     <string name="API_password">password</string>
     <string name="run_environment">DEV</string>
