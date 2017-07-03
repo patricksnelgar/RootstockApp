@@ -226,8 +226,8 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     }
 
     private void hideResponses(){
-        textResponseMessage.setVisibility(View.INVISIBLE);
-        progressBarHolder.setVisibility(View.INVISIBLE);
+        textResponseMessage.setVisibility(View.GONE);
+        progressBarHolder.setVisibility(View.GONE);
     }
     
     @Override
@@ -310,6 +310,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View v, int index, long id){
+
             debugUtil.logMessage(TAG, "User selected block at: <" + index + ">",  run_environment);
             if(index == 0){
                 block = null;

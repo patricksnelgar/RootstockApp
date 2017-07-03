@@ -2,15 +2,19 @@ package echo.rootstockapp;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import echo.rootstockapp.DbContract.*;
+import echo.rootstockapp.DbContract.IdentifierColumnNames;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.LineNumberReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class DbHelper extends SQLiteOpenHelper {
     private final String TAG = DbHelper.class.getSimpleName();
@@ -37,7 +41,7 @@ public class DbHelper extends SQLiteOpenHelper {
         dbProgressListener = (DbProgressListener) l;
     }
 
-        public DbHelper(Context context, String env) {
+    public DbHelper(Context context, String env) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
         run_environment = env;
         debugUtil = new DebugUtil();
@@ -108,7 +112,6 @@ public class DbHelper extends SQLiteOpenHelper {
                         dbProgressListener.setResponseTextNegative("Failed to insert all records");
                     } else {
                         dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
-                        //dbProgressListener.writeSuccessfull();
                     }
                 } catch (Exception e){
                     debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
@@ -117,17 +120,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
             }
         }).start();
-
-             /*
-                        if(input[2].equals("cane")){                            
-                            long rowID = db.insert(DbCaneIdentifiers.TABLE_NAME, null, _v);
-                            if(rowID!=-1) count++;
-                        } else if(input[2].equals("component")) {                            
-                            long rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v); 
-                            if(rowID!=-1) count++;
-                        } 
-                        */
-        
+       
         return false;
     }
 
@@ -142,48 +135,43 @@ public class DbHelper extends SQLiteOpenHelper {
 
         return _r;
     }
-
-    /*
-    public void databaseLookup(String barcode){
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+    
+    public List<String> databaseLookup(String barcode){
+        SQLiteDatabase db = this.getReadableDatabase();
         
         String[] columns = {
-            DbIdentifiers._ID,
-            DbIdentifiers.IDENTIFIERS_BARCODE_TITLE,
-            DbIdentifiers.IDENTIFIERS_TYPE_TITLE,
-            DbIdentifiers.IDENTIFIERS_SITE_TITLE,
-            DbIdentifiers.IDENTIFIERS_BLOCK_TITLE,
-            DbIdentifiers.IDENTIFIERS_FPI_TITLE,
-            DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE,
-            DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE
+            IdentifierColumnNames._ID,
+            IdentifierColumnNames.BARCODE_TITLE,
+            IdentifierColumnNames.TYPE_TITLE,
+            IdentifierColumnNames.SITE_TITLE,
+            IdentifierColumnNames.BLOCK_TITLE,
+            IdentifierColumnNames.FPI_TITLE,
+            IdentifierColumnNames.CULTIVAR_TITLE,
+            IdentifierColumnNames.GRAFT_YEAR_TITLE
 
         };
 
-        String columnFilter = DbIdentifiers.IDENTIFIERS_BARCODE_TITLE + " = ?";
+        String columnFilter = IdentifierColumnNames.BARCODE_TITLE + " = ?";
         String[] columnValues = {barcode};
 
-        Cursor c = db.query(
-            DbIdentifiers.IDENTIFIERS_TABLE_NAME,
-            columns,
-            columnFilter,
-            columnValues,
-            null,
-            null,
-            null
-        );
+        Cursor c;
+        c = lookupCane(db, columns, columnFilter, columnValues);
+        if(c == null) c = lookupComponent(db, columns, columnFilter, columnValues);
+        
+        if(c != null){
+            try {
+                c.moveToNext();
+                return buildIdentifierReturnObject(c);
+            } catch (Exception e){
+                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            }
+        } 
 
-        debugUtil.logMessage(TAG, "Got rows from DB:" + c.getCount(), run_environment);
-        if(c.getCount() != 1 && c.getCount() > 0){
-            debugUtil.logMessage(TAG, "Got too many rows from db", DebugUtil.LOG_LEVEL_ERROR, run_environment);            
-            return;
-        }
-        try {
-            c.moveToNext();
-            updateIdentifierFields(c);
-        } catch (Exception e){
-            Log.e(TAG, e.getLocalizedMessage());
-        }
+        debugUtil.logMessage(TAG, "Failed to find barcode <" + barcode + "> in DB", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        return null;
 
+
+        /*
         columns = new String[]{
             DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
             DbObservations.OBSERVATIONS_VALUE_TITLE
@@ -241,8 +229,48 @@ public class DbHelper extends SQLiteOpenHelper {
         } else {
             dataEdit = false;
         }
+        */
     }
 
+    private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values){
+        Cursor _t = database.query(
+            DbContract.DbCaneIdentifiers.TABLE_NAME,
+            columns,
+            filter,
+            values,
+            null,
+            null,
+            null);
+        
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", run_environment);
+        if(_t.getCount() == 1) return _t;
+        else return null;
+    }
+
+    private Cursor lookupComponent(SQLiteDatabase database, String[] columns, String filter, String[] values){
+        Cursor _t = database.query(
+            DbContract.DbComponentIdentifiers.TABLE_NAME,
+            columns,
+            filter,
+            values,
+            null,
+            null,
+            null);
+        
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", run_environment);
+        if(_t.getCount() == 1) return _t;
+        else return null;
+    }
+
+    private List<String> buildIdentifierReturnObject(Cursor _c){
+        List<String> _l = new ArrayList<String>();
+        for(int index = 0; index < _c.getColumnCount(); index++)
+            _l.add(_c.getString(index));
+        
+        return _l;
+    }
+
+    /*
     public void saveData(View v){
        debugUtil.logMessage(TAG, "Is edit? " + dataEdit, run_environment);
 

@@ -31,9 +31,7 @@ public class NetworkLoginDialog extends DialogFragment{
 
     private String      authenticateResponse;
     private String      API_URL;
-    private String      run_environment;
-
-    
+    private String      run_environment;    
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

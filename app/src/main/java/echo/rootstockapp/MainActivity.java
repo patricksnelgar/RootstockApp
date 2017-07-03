@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -20,6 +21,7 @@ import echo.rootstockapp.DbHelper.DbProgressListener;
 import echo.rootstockapp.LoadDataDialog.OnIdentifierDataReceivedListener;
 import echo.rootstockapp.ScannerManager.BarcodeFoundListener;
 import java.io.File;
+import java.util.List;
 
 /*
  * Entry point for the application, has a basic set of text views to hold info pulled from db.
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     private boolean dataEdit = false;
     private boolean lockMenu = true;
 
+    private Fragment currentFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             invalidateOptionsMenu();            
         }
 
-        scannerManager = new ScannerManager(getApplicationContext(), run_environment);
+        scannerManager = new ScannerManager(getApplicationContext(), run_environment, this);
         databaseHelper = new DbHelper(getApplicationContext(), run_environment);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -92,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     }
 
     private void loadFragment(Fragment f){
-        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, f).commit();
+        currentFragment = f;
+        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, currentFragment).commit();
     }
 
     public void changeForm(){
@@ -152,8 +157,17 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     }
 
     @Override
-    public void onBarcodeFound(String barcode){
+    public void onBarcodeFound(final String barcode){
         debugUtil.logMessage(TAG, "Looking up barcode: <" + barcode + ">", run_environment);
+        List<String> identifier =  databaseHelper.databaseLookup(barcode);
+        if(identifier == null) {
+            runOnUiThread(new Runnable(){
+                public void run(){
+                    Toast.makeText(getApplicationContext(), "Could not find barcode " + barcode, Toast.LENGTH_SHORT).show();
+                }
+            });            
+            return;
+        } else debugUtil.logMessage(TAG, "Identifier found (" + identifier.toString() + ")", run_environment);
     }
 
     @Override

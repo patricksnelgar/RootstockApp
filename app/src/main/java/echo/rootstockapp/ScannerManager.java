@@ -31,10 +31,10 @@ public class ScannerManager {
 
 
 
-    public ScannerManager(Context context, String env) {
+    public ScannerManager(Context context, String env, BarcodeFoundListener l) {
         debugUtil = new DebugUtil();
         run_environment = env;
-        barcodeListner = (BarcodeFoundListener) context;
+        barcodeListner = (BarcodeFoundListener) l;
 
         AidcManager.create(context, new CreatedCallback() {
             @Override

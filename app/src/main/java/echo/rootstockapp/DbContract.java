@@ -4,7 +4,7 @@ import android.provider.BaseColumns;
 
 public final class DbContract {
 
-    public  class IdentifierColumnNames {
+    public static class IdentifierColumnNames {
         public static final String _ID = "_id";
         public static final String BARCODE_TITLE = "barcode";
         public static final String TYPE_TITLE = "type";
