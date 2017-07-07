@@ -1,6 +1,8 @@
 package echo.rootstockapp;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
@@ -50,6 +52,12 @@ public class NetworkLoginDialog extends DialogFragment{
         buttonLogin.setOnClickListener(buttonLoginOnClickListener);
         buttonCancel.setOnClickListener(buttonCancelOnClickListener);
 
+        Context c = getActivity();
+        SharedPreferences prefs = c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE);
+
+        run_environment = prefs.getString(c.getString(R.string.env), null);
+        API_URL = prefs.getString(c.getString(R.string.api), null);
+
         return dialog;
     }
 
@@ -93,11 +101,6 @@ public class NetworkLoginDialog extends DialogFragment{
 
     private void setResponse(String r){
         authenticateResponse = r;
-    }
-
-    public void setConfig(String api, String run){
-        API_URL         = api;
-        run_environment = run;
     }
 
     final View.OnClickListener buttonLoginOnClickListener = new View.OnClickListener() {

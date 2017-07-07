@@ -31,9 +31,9 @@ public class ScannerManager {
 
 
 
-    public ScannerManager(Context context, String env, BarcodeFoundListener l) {
+    public ScannerManager(Context context, BarcodeFoundListener l) {
         debugUtil = new DebugUtil();
-        run_environment = env;
+        run_environment = context.getSharedPreferences(context.getString(R.string.pref_file),Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
         barcodeListner = (BarcodeFoundListener) l;
 
         AidcManager.create(context, new CreatedCallback() {

@@ -2,11 +2,10 @@ package echo.rootstockapp;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -17,9 +16,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
-import echo.rootstockapp.DbHelper.DbProgressListener;
-import echo.rootstockapp.LoadDataDialog.OnIdentifierDataReceivedListener;
-import echo.rootstockapp.ScannerManager.BarcodeFoundListener;
+
+import echo.rootstockapp.forms.CaneInfoFragment;
 import java.io.File;
 import java.util.List;
 
@@ -65,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             invalidateOptionsMenu();            
         }
 
-        scannerManager = new ScannerManager(getApplicationContext(), run_environment, this);
-        databaseHelper = new DbHelper(getApplicationContext(), run_environment);
+        scannerManager = new ScannerManager(getApplicationContext(), this);
+        databaseHelper = new DbHelper(getApplicationContext());
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
@@ -85,6 +83,12 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             API_username = getResources().getString(R.string.API_username);
             API_pw = getResources().getString(R.string.API_password);
             run_environment = getResources().getString(R.string.run_environment);
+
+            SharedPreferences.Editor prefEditor = getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE).edit();
+            prefEditor.putString(getString(R.string.env), run_environment);
+            prefEditor.putString(getString(R.string.api), API_URL);
+            prefEditor.commit();
+
         } catch(Exception e){
             return false;
         }
@@ -159,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     @Override
     public void onBarcodeFound(final String barcode){
         debugUtil.logMessage(TAG, "Looking up barcode: <" + barcode + ">", run_environment);
-        List<String> identifier =  databaseHelper.databaseLookup(barcode);
+        List<String> identifier =  databaseHelper.lookupIdentifier(barcode);
         if(identifier == null) {
             runOnUiThread(new Runnable(){
                 public void run(){
@@ -167,7 +171,9 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
                 }
             });            
             return;
-        } else debugUtil.logMessage(TAG, "Identifier found (" + identifier.toString() + ")", run_environment);
+        }
+        debugUtil.logMessage(TAG, "Identifier found (" + identifier.toString() + ")", run_environment);
+        ((CaneInfoFragment) this.currentFragment).onBarcodeFound(identifier);
     }
 
     @Override
@@ -211,12 +217,10 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             case R.id.menu_authenticate:
                 debugUtil.logMessage(TAG,"User wants to authenticate", run_environment);
                 NetworkLoginDialog n = new NetworkLoginDialog();
-                n.setConfig(API_URL, run_environment);
                 n.show(getSupportFragmentManager(), "PFR_ Login");
                 return true;
             case R.id.menu_load_data:
                 LoadDataDialog d = new LoadDataDialog();
-                d.setConfig(API_URL, run_environment);
                 d.show(getSupportFragmentManager(), "Load data");
                 break;
             case R.id.menu_change_form:

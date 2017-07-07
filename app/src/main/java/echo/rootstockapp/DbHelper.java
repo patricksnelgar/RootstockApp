@@ -17,11 +17,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DbHelper extends SQLiteOpenHelper {
+
     private final String TAG = DbHelper.class.getSimpleName();
+
     private static final int DATABASE_VERSION = 11;
     public static final String DATABASAE_NAME = "HandHeld.db";
+
     private String run_environment;
     private DebugUtil debugUtil;
+    private boolean dataEdit = false;
 
     private DbProgressListener dbProgressListener;
 
@@ -34,16 +38,16 @@ public class DbHelper extends SQLiteOpenHelper {
 
     
 
-    public DbHelper(Context context, String env, DbProgressListener l) {
+    public DbHelper(Context context, DbProgressListener l) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
-        run_environment = env;
+        run_environment = context.getSharedPreferences(context.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
         debugUtil = new DebugUtil();
         dbProgressListener = (DbProgressListener) l;
     }
 
-    public DbHelper(Context context, String env) {
+    public DbHelper(Context context) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
-        run_environment = env;
+        run_environment = run_environment = context.getSharedPreferences(context.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
         debugUtil = new DebugUtil();
     }
 
@@ -124,19 +128,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    private String buildInputValues(String[] input, int limit){
-        if(input.length == 0) return null;
-
-        String _r = "\"" + input[0] + "\"";
-        for(int i = 1; i < limit; i++)
-            _r += "," +  "\"" + input[i] + "\"";      
-
-        //debugUtil.logMessage(TAG, "value string: " + _r, run_environment);
-
-        return _r;
-    }
-    
-    public List<String> databaseLookup(String barcode){
+    public List<String> lookupIdentifier(String barcode){
         SQLiteDatabase db = this.getReadableDatabase();
         
         String[] columns = {
@@ -232,6 +224,47 @@ public class DbHelper extends SQLiteOpenHelper {
         */
     }
 
+    public List<String> lookupObservationsForBarcode(String barcode){
+        
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = new String[]{
+            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
+            DbObservations.OBSERVATIONS_VALUE_TITLE
+        };
+
+        String columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
+        String[] columnValues = new String[]{ barcode };
+
+        final Cursor cur = db.query(
+            DbObservations.OBSERVATIONS_TABLE_NAME,
+            columns,
+            columnFilter,
+            columnValues,
+            null,
+            null,
+            null
+        );
+
+        if(cur.getCount() > 0){
+            dataEdit = true;
+            debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
+
+            for(int i = 0; i < cur.getCount(); i++){
+                cur.moveToNext();
+                String measureId = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
+                final String measureValue = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
+
+                debugUtil.logMessage(TAG, "Observation loaded: id (" + measureId + ") value (" + measureValue + ")", run_environment)                ;
+            }         
+        } else {
+            dataEdit = false;
+            debugUtil.logMessage(TAG, "No observatiosn found for ID (" + barcode + ")", run_environment);
+        }
+
+        return null;
+    }
+
     private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values){
         Cursor _t = database.query(
             DbContract.DbCaneIdentifiers.TABLE_NAME,
@@ -268,6 +301,14 @@ public class DbHelper extends SQLiteOpenHelper {
             _l.add(_c.getString(index));
         
         return _l;
+    }
+
+    public boolean saveCaneData(List<String> data){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        
+        
+        return false;
     }
 
     /*

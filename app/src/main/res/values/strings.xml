@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Rootstock Data</string>
+    <string name="username">username</string>
+    <string name="env">env</string> 
+    <string name="api">api_url</string>
+    <string name="pref_file">echo.rootstockapp.PREFERENCE_FILE</string>
 </resources>

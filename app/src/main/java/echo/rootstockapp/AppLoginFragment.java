@@ -1,6 +1,7 @@
 package echo.rootstockapp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -153,6 +154,11 @@ public  class AppLoginFragment extends Fragment{
                 editUsername.setEnabled(false);
                 iconLockState.setImageResource(R.drawable.ic_lock_open_black_24dp);
                 loginVerifyListener.onLoginVerify(true);
+
+                SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString(getString(R.string.username), editUsername.getText().toString());
+                editor.commit();
             } 
         }
     };    

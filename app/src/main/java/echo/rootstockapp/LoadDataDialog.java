@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.DialogFragment;
@@ -39,7 +40,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 
 public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
@@ -66,6 +69,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     private DbHelper databaseHelper;
 
     List<String> listSites = new ArrayList<String>(Arrays.asList("Choose a site"));
+    List<String> listCodes = new ArrayList<String>(Arrays.asList("null"));
     List<String> listBlocks = new ArrayList<String>(Arrays.asList("Choose a block"));
 
     ArrayAdapter<String> adapterSites;
@@ -93,9 +97,15 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         asyncHttpClient = new AsyncHttpClient();
         asyncHttpClient.addHeader("Authorization", authourizationKey);
 
-        databaseHelper = new DbHelper(getActivity().getApplicationContext(), run_environment, this);
+        databaseHelper = new DbHelper(getActivity().getApplicationContext(), this);
 
         debugUtil = new DebugUtil();
+
+        Context c = getActivity();
+        SharedPreferences prefs = c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE);
+
+        run_environment = prefs.getString(c.getString(R.string.env), null);
+        API_URL = prefs.getString(c.getString(R.string.api), null);
 
         dialog = super.onCreateDialog(savedInstanceState);
         dialog.setContentView(R.layout.load_data_layout);
@@ -110,7 +120,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         ((Button) dialog.findViewById(R.id.button_cancel)).setOnClickListener(onCancelClickListener);
         ((Button) dialog.findViewById(R.id.button_load)).setOnClickListener(onLoadDataClickListener);
 
-        listSites.addAll(loadSites());
+        loadSites();
         
         adapterSites = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, listSites);
         adapterSites.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -122,43 +132,100 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         adapterBlocks.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBlock.setAdapter(adapterBlocks);
         spinnerBlock.setOnItemSelectedListener(onBlockSelectedListerner);
-
-        adapterSites.notifyDataSetChanged();
-        adapterBlocks.notifyDataSetChanged();
         
         return dialog;
     }
 
-    private ArrayList<String> loadSites(){
+    private void loadSites(){
         // Can change to loading from API call
         hideResponses();
-        String[] _t = getActivity().getResources().getStringArray(R.array.sites);
-        if(_t.length > 0)
-            return new ArrayList<String>(Arrays.asList(_t));
-        else {
-            setResponseTextNegative("Error loading sites.");
-        }
+        setResponseTextNegative("Loading sites...");
+        asyncHttpClient.get(API_URL+"/fdc/sites", new AsyncHttpResponseHandler() {
 
-        return new ArrayList<String>();
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response){
+                String responseString = new String(response);
+                debugUtil.logMessage(TAG, "Got sites: " + responseString, run_environment);
+                if(statusCode == 200 && responseString.length() > 0){
+                    hideResponses();
+                    try {
+                        //JSONObject parsedResponse = new JSONObject(responseString);  
+                        JSONArray tok = new JSONArray(responseString);
+                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
+                        for(int i = 0; i < tok.length(); i++){
+                            JSONObject _obj = tok.getJSONObject(i);
+                            debugUtil.logMessage(TAG, "code: " + _obj.getString("code"), run_environment);
+                            addSite(_obj.getString("code"), _obj.getString("name"));
+                        }
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);                 
+                        //addSite(parsedResponse.getString("code"));
+                    } catch(Exception e){
+                        debugUtil.logMessage(TAG, "couldnt parse string into JSON: " + e.getLocalizedMessage(), run_environment);
+                        setResponseTextNegative("Failed to load sites");
+                    }
+                } else
+                    setResponseTextNegative("Failed to load sites");
+            }
+
+            @Override 
+            public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error){
+                String responseString = new String(response);
+                debugUtil.logMessage(TAG, "Failed with code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                setResponseTextNegative("Failed to load sites");
+            }
+        });
     }
 
-    private ArrayList<String> loadBlocksFromSiteCode(String siteCode){
+    private void addSite(String siteCode, String siteName){
+        listCodes.add(siteCode);
+        listSites.add(siteName);
+        adapterSites.notifyDataSetChanged();
+    }
+
+    private void loadBlocksFromSiteCode(String siteCode){
         // Can change to loading from API call
         hideResponses();
         debugUtil.logMessage(TAG, "User wants data from: " + siteCode, run_environment);
-        switch(siteCode){
-            case "TRC":
-                String[] _t = getActivity().getResources().getStringArray(R.array.TRC_blocks);
-                if(_t.length > 0)
-                    return new ArrayList<String>(Arrays.asList(_t));
-                else break;
-            default:
-                break;
-        }
+        setResponseTextNegative("Loading blocks...");
+        asyncHttpClient.get(API_URL+"/fdc/blocks?site=" + siteCode, new AsyncHttpResponseHandler() {
 
-        debugUtil.logMessage(TAG, "No sites", run_environment);
-        setResponseTextNegative("Error loading blocks");
-        return new ArrayList<String>();        
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response){
+                String responseString = new String(response);
+                debugUtil.logMessage(TAG, "Got response: " + responseString, run_environment);
+                if(statusCode == 200 && responseString.length() > 0){
+                    hideResponses();
+                    try {
+                        //JSONObject parsedResponse = new JSONObject(responseString);  
+                        JSONArray tok = new JSONArray(responseString);
+                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
+                        for(int i = 0; i < tok.length(); i++){
+                            JSONObject _obj = tok.getJSONObject(i);
+                            debugUtil.logMessage(TAG, "code: " + _obj.getString("block"), run_environment);
+                            addBlock(_obj.getString("block"));
+                        }
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);                 
+                        //addSite(parsedResponse.getString("code"));
+                    } catch(Exception e){
+                        debugUtil.logMessage(TAG, "couldnt parse string into JSON: " + e.getLocalizedMessage(), run_environment);
+                        setResponseTextNegative("Failed to load sites");
+                    }
+                } else
+                    setResponseTextNegative("Failed to load sites");
+            }
+
+            @Override 
+            public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error){
+                String responseString = new String(response);
+                debugUtil.logMessage(TAG, "Failed with code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                setResponseTextNegative("Failed to load sites");
+            }
+        });       
+    }
+
+    private void addBlock(String blockNum){
+        listBlocks.add(blockNum);
+        adapterBlocks.notifyDataSetChanged();
     }
 
     private void makeDataRequest(){
@@ -270,11 +337,6 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         });
     }
 
-    public void setConfig(String api, String env){
-        API_URL = api;
-        run_environment = env;
-    }
-
     @Override
     public void onDestroy(){
         super.onDestroy();
@@ -293,11 +355,10 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 return;
             }
 
-            site =  listSites.get(index);
+            site =  listCodes.get(index);
             listBlocks.clear(); 
             listBlocks.add("Choose a block");      
-            listBlocks.addAll(loadBlocksFromSiteCode(site));
-            adapterBlocks.notifyDataSetChanged();
+            loadBlocksFromSiteCode(site);
         }
 
         @Override
