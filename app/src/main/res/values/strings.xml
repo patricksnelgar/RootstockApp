@@ -4,4 +4,5 @@
     <string name="env">env</string> 
     <string name="api">api_url</string>
     <string name="pref_file">echo.rootstockapp.PREFERENCE_FILE</string>
+    <string name="placeholder_date"></string>
 </resources>

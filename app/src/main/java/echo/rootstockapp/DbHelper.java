@@ -34,9 +34,7 @@ public class DbHelper extends SQLiteOpenHelper {
         public void setProgressText(String message);
         public void setResponseTextPositive(String message);
         public void setResponseTextNegative(String message);
-    }
-
-    
+    }    
 
     public DbHelper(Context context, DbProgressListener l) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
@@ -307,6 +305,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         
+        debugUtil.logMessage(TAG, "User wants to save data: (" + data.toString() + ")", run_environment);
         
         return false;
     }

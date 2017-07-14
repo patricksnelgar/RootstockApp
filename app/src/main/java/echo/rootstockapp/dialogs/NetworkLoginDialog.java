@@ -1,4 +1,4 @@
-package echo.rootstockapp;
+package echo.rootstockapp.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -16,6 +16,10 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
+
+import echo.rootstockapp.R;
+
+import echo.rootstockapp.DebugUtil;
 
 public class NetworkLoginDialog extends DialogFragment{
 

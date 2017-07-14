@@ -8,5 +8,13 @@
         <item name="colorAccent">@color/colorSecondary</item>
 
     </style>
-    
+
+    <style name="DataForms" parent="AppTheme">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="Header" parent="AppTheme">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColor">#fafafa</item>
+    </style>
 </resources>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/include_header"
+        layout="@layout/form_header_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:id="@+id/form_budbreak_flowering"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/include_header"
+        android:background="@color/colorFormDisabledBackground"
+        android:theme="@style/DataForms" >
+
+        <RelativeLayout
+            android:id="@+id/vine_budbreak_start_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_vine_budbreak_start_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Vine bud break start:" />
+
+            <TextView
+                android:id="@+id/text_vine_budbreak_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center"
+                android:padding="4dp"
+                android:tag="vine_budbreak_start"
+                android:text="@string/placeholder_date"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_budbreak_start_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/vine_budbreak_start_holder"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_cane_budbreak_start_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Cane bud break start:" />
+
+            <TextView
+                android:id="@+id/text_cane_budbreak_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:padding="4dp"
+                android:tag="cane_budbreak_start"
+                android:text="@string/placeholder_date"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_budbreak_finish_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cane_budbreak_start_holder"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_cane_budbreak_finish_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Cane bud break finish:" />
+
+            <TextView
+                android:id="@+id/text_cane_budbreak_finish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:padding="4dp"
+                android:tag="cane_budbreak_finish"
+                android:text="@string/placeholder_date"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center"/>
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/image_BB_divider"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/cane_budbreak_finish_holder"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="4dp"
+            android:background="@color/colorSecondary" />
+
+        <RelativeLayout
+            android:id="@+id/vine_flowering_start_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/image_BB_divider"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_vine_flower_start_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Vine flowering finish:" />
+
+            <TextView
+                android:id="@+id/text_vine_flowering_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:padding="4dp"
+                android:text="@string/placeholder_date"
+                android:tag="vine_flowering_start"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_flowering_start_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/vine_flowering_start_holder"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_cane_flowering_start_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Cane flowering start:" />
+
+            <TextView
+                android:id="@+id/text_cane_flowering_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:padding="4dp"
+                android:tag="cane_flowering_start"
+                android:text="@string/placeholder_date"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/cane_flowering_finish_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cane_flowering_start_holder"
+            android:layout_marginBottom="4dp"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/text_cane_flowering_finish_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:paddingRight="16dp"
+                android:text="Cane flowering finish:" />
+
+            <TextView
+                android:id="@+id/text_cane_flowering_finish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="190dp"
+                android:background="@color/colorFieldActiveBackground"
+                android:padding="4dp"
+                android:tag="cane_flowering_finish"
+                android:text="@string/placeholder_date"
+                android:maxLines="1"
+                android:minLines="1"
+                android:minWidth="135sp"
+                android:maxWidth="135sp"
+                android:textAlignment="center"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <include
+        android:id="@+id/include_footer"
+        layout="@layout/form_footer_layout"/>
+
+</RelativeLayout>

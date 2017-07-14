@@ -2,18 +2,10 @@
 <resources>
     <string-array name="forms">
         <item>Cane info</item>
-        <item>Placeholder</item>
-        <item>Placeholder</item>
-        <item>Placeholder</item>
+        <item>Bud break / Flowering</item>
     </string-array>
-    <string-array name="sites">
-        <item>TRC</item>
-        <item>MARC</item>
-        <item>KK</item>
-        <item>GIS</item>
-    </string-array>
-    <string-array name="TRC_blocks">
-        <item>49</item>
-        <item>50</item>
+    <string-array name="cane_type">
+        <item>Fruit stalk / Early</item>
+        <item>Late developed</item>
     </string-array>
 </resources>

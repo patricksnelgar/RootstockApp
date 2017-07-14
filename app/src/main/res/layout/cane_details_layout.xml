@@ -10,21 +10,21 @@
         layout="@layout/form_header_layout" />
 
     <RelativeLayout
-        android:id="@+id/row_cane_measurements"
+        android:id="@+id/form_cane_details"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/include_header"
-        android:background="@color/colorFormDisabledBackground"
-        android:padding="8dp">
+        android:background="@color/colorFormDisabledBackground">
 
         <RelativeLayout
             android:id="@+id/cane_length_holder"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingRight="4dp">
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/text_cm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -56,9 +56,11 @@
             android:id="@+id/cane_diameter_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/cane_length_holder">
+            android:layout_below="@+id/cane_length_holder"
+            android:paddingRight="4dp">
 
             <TextView
+                android:id="@+id/text_mm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -91,17 +93,18 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/cane_diameter_holder"
             android:paddingBottom="8dp"
+            android:paddingEnd="4dp"
             android:paddingStart="5dp"
             android:paddingTop="8dp">
 
-            <android.support.v7.widget.AppCompatCheckBox
+            <CheckBox
                 android:id="@+id/cane_exists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:enabled="false"
-                android:checked="true" />
+                android:checked="true"
+                android:enabled="false" />
 
             <android.support.v7.widget.AppCompatTextView
                 android:id="@+id/cane_exists_label"
@@ -117,72 +120,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/cane_exists_holder"
-            android:paddingBottom="8dp"
-            android:paddingStart="5dp"
-            android:paddingTop="8dp">
-
-            <!--
-            <RadioGroup
-                android:id="@+id/radio_group_early_or_late"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:layout_alignParentEnd="true">
-
-                <RadioButton
-                    android:id="@+id/radio_late"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:enabled="false" />
-
-                <RadioButton
-
-                    android:id="@+id/radio_early"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:enabled="false" />
-
-            </RadioGroup>
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp">
 
             <TextView
-                android:id="@+id/radio_early_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:paddingBottom="4dp"
-                android:paddingLeft="5dp"
-                android:paddingTop="6dp"
-                android:text="Fruit stalk / Early"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/radio_late_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/radio_early_label"
-                android:paddingBottom="4dp"
-                android:paddingLeft="5dp"
-                android:paddingTop="6dp"
-                android:text="Late developed"
-                android:textSize="18sp" />
-            -->
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:id="@+id/text_cane_type_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:text="Cane type"
                 android:textSize="18sp" />
 
             <Spinner
-                android:id="@+id/spinner_cane_type"
+                android:id="@+id/cane_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/text_cane_type_label"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:entries="@array/cane_type" />
+                android:layout_centerVertical="true" />
 
         </RelativeLayout>
 
@@ -192,12 +147,5 @@
         android:id="@+id/include_footer"
         layout="@layout/form_footer_layout" />
 
-    <!-- <Button
-        android:id="@+id/buttonCopyDb"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="copyDatabase"
-        android:text="Copy DB"/> -->*
+
 </RelativeLayout>

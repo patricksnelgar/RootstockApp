@@ -17,9 +17,14 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
+import echo.rootstockapp.dialogs.LoadDataDialog;
+import echo.rootstockapp.dialogs.NetworkLoginDialog;
+import echo.rootstockapp.forms.BaseFragment;
 import echo.rootstockapp.forms.CaneInfoFragment;
+import echo.rootstockapp.forms.BudBreakFragment;
 import java.io.File;
 import java.util.List;
+
 
 /*
  * Entry point for the application, has a basic set of text views to hold info pulled from db.
@@ -35,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     private String run_environment;
 
     private int formIndex = -1;
+    private int fragmentID = -1;
 
     private DebugUtil debugUtil = new DebugUtil();
     private ScannerManager scannerManager;
@@ -51,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getSupportActionBar().setTitle(R.string.app_name); 
-
+        getSupportActionBar().setElevation(0f);
+        
         if(!loadConfig()){
             Toast.makeText(this,"Could not load config, exiting.", Toast.LENGTH_LONG).show();
             finish();
@@ -115,10 +122,19 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             debugUtil.logMessage(TAG,"User wants to load: <" + formName + ">", run_environment);
             switch(formName){
                 case "Cane info":
+                    getSupportActionBar().setTitle(formName);
                     loadFragment(new CaneInfoFragment());
+                    fragmentID = 0;
+                    break;
+                case "Bud break / Flowering":
+                    loadFragment(new BudBreakFragment());
+                    getSupportActionBar().setTitle(formName);
+                    fragmentID = 1;
                     break;
                 default:
+                    getSupportActionBar().setTitle("No Form");
                     setContentView(R.layout.activity_main);
+                    break;
             }
         } catch (Exception e){
             debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
@@ -162,6 +178,9 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
 
     @Override
     public void onBarcodeFound(final String barcode){
+        // App should not do anything if in the boot up lock screen
+        if(lockMenu) return;
+
         debugUtil.logMessage(TAG, "Looking up barcode: <" + barcode + ">", run_environment);
         List<String> identifier =  databaseHelper.lookupIdentifier(barcode);
         if(identifier == null) {
@@ -173,7 +192,18 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             return;
         }
         debugUtil.logMessage(TAG, "Identifier found (" + identifier.toString() + ")", run_environment);
-        ((CaneInfoFragment) this.currentFragment).onBarcodeFound(identifier);
+
+        switch(fragmentID){
+            case -1: return;
+            case 0:
+                ((CaneInfoFragment) currentFragment).onBarcodeFound(identifier);
+                break;
+            case 1:
+                ((BudBreakFragment) currentFragment).onBarcodeFound(identifier);
+                break;
+            default:
+                return;
+        }
     }
 
     @Override

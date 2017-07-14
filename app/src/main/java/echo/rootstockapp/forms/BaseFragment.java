@@ -9,11 +9,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 import echo.rootstockapp.DebugUtil;
 import java.util.List;
 import android.widget.TextView;
+import android.support.v7.widget.AppCompatSpinner;
 
 import echo.rootstockapp.MeasurementText;
 
@@ -24,15 +29,25 @@ public class BaseFragment extends Fragment {
     private static String TAG = BaseFragment.class.getSimpleName();
 
     private RelativeLayout header; 
+    private RelativeLayout footer;
+    private TextView textFieldBarcode;
     private DebugUtil debugUtil;
     private String run_environment;
+    private Button buttonSave;
+    private Button buttonEnable;
     
    
     protected View inflateFragment(int resId, LayoutInflater inflator, ViewGroup container) {
         View v = inflator.inflate(resId, container, false);
 
         header = (RelativeLayout) v.findViewById(R.id.include_header);
-        
+        footer = (RelativeLayout) v.findViewById(R.id.include_footer);
+        textFieldBarcode = (TextView) header.findViewById(R.id.barcode);
+        textFieldBarcode.setOnClickListener(barcodeOnClickListener);
+        buttonSave = (Button) footer.findViewById(R.id.button_save);
+
+        buttonEnable = (Button) footer.findViewById(R.id.button_enable);
+
         Context c = getActivity();
 
         run_environment = c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE)
@@ -43,6 +58,7 @@ public class BaseFragment extends Fragment {
     }
 
     public void onBarcodeFound(final List<String> identifier){
+        enableFooter();
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run(){
@@ -51,6 +67,16 @@ public class BaseFragment extends Fragment {
                 ((TextView) header.findViewById(R.id.cultivar)).setText(identifier.get(6));
             }
         });
+    }
+
+    private boolean isInputField(View _view){
+        
+        if(_view instanceof MeasurementText) return true;
+        if(_view instanceof CheckBox) return true;
+        if(_view instanceof EditText) return true;
+        //if(_view instanceof Spinner) return true;
+
+        return false;
     }
 
     public void showView(final ViewGroup v){
@@ -66,33 +92,57 @@ public class BaseFragment extends Fragment {
         getActivity().runOnUiThread(new Runnable(){
             @Override
             public void run(){
-                v.setBackgroundColor(Color.parseColor("#fafafa"));
+
                 for(int i = 0; i < v.getChildCount(); i++){
                     View _child = v.getChildAt(i);
-                    if(_child instanceof ViewGroup) enableInputs((ViewGroup) _child);
-                    else if(!_child.isEnabled()) _child.setEnabled(true);
+                    //debugUtil.logMessage(TAG, "View is type: (" + _child.getClass().getSimpleName() + ")", run_environment);
+                    if(_child instanceof ViewGroup) {
+                        //_child.setBackgroundColor(Color.parseColor("#fafafa"));
+                        enableInputs((ViewGroup) _child);
+                    } else if(isInputField(_child))
+                        _child.setEnabled(true);
                 }
+            }
+        });
+    }
+
+    public void enableComponent(final View v){
+        getActivity().runOnUiThread(new Runnable(){ 
+            @Override
+            public void run() {
+                v.setEnabled(true);
             }
         });
     }
     
-    public void enableFooterButtons(final Button... buttons){
-
+    private void enableFooter(){
         getActivity().runOnUiThread(new Runnable() {
             @Override
-            public void run(){
-                for(Button b : buttons){
-                    b.setEnabled(true);
-                }
+            public void run() {
+                buttonSave.setEnabled(true);
             }
-        });
-        
+        });      
     }
 
-    public String getRunEnvironment(){ return run_environment; }
+    public String getRunEnvironment(){ 
+        return run_environment; 
+    }
+
+    public String getUser(){
+        Context c = getActivity();
+        return c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(c.getString(R.string.username), null);
+    }
 
     public String getBarcode() { 
         return ((TextView) header.findViewById(R.id.barcode)).getText().toString(); 
+    }
+
+    public void registerSaveButton(View.OnClickListener listener){
+        buttonSave.setOnClickListener(listener);
+    }
+
+    public void registerListener(View.OnClickListener l){
+        buttonEnable.setOnClickListener(l);
     }
     
     public void showToastNotification(final String message){
@@ -103,4 +153,12 @@ public class BaseFragment extends Fragment {
             }
         });
     }
+
+    final View.OnClickListener barcodeOnClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View view){
+            debugUtil.logMessage(TAG, "## show user list of barcodes / FPIs", run_environment);
+        }
+    };
 }

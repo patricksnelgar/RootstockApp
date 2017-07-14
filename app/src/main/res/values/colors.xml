@@ -9,4 +9,5 @@
     <color name="colorTextSuccess">#4CAF50</color>
     <color name="colorFieldLockedBackground">#FFDA60</color>
     <color name="colorFormDisabledBackground">#1e000000</color>
+    <color name="colorFieldActiveBackground">#1E000000</color>
 </resources>

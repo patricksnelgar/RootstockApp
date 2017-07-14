@@ -1,4 +1,4 @@
-package echo.rootstockapp;
+package echo.rootstockapp.dialogs;
 
 import android.R.layout;
 import android.app.Activity;
@@ -43,6 +43,10 @@ import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import echo.rootstockapp.R;
+import echo.rootstockapp.DebugUtil;
+import echo.rootstockapp.DbHelper;
 
 
 public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
