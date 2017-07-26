@@ -1,6 +1,5 @@
 package echo.rootstockapp.forms;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,19 +8,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
-
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import echo.rootstockapp.DbHelper;
 import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.MeasurementText;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-
 import echo.rootstockapp.R;
 
 public class CaneInfoFragment extends BaseFragment {
@@ -67,15 +64,6 @@ public class CaneInfoFragment extends BaseFragment {
 
         registerSaveButton(saveDataOnClickListener);
 
-        registerListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-
-
-                caneInfoHolder.setBackgroundColor(Color.parseColor("#fafafa"));
-            }
-        });
-
         debugUtil = new DebugUtil();
         run_environment = getRunEnvironment();
 
@@ -116,7 +104,8 @@ public class CaneInfoFragment extends BaseFragment {
             @Override
             public void run(){
                 observationCaneLength.setText("");
-                observationCaneDiameter.setText("");                
+                observationCaneDiameter.setText("");
+                observationCaneType.setSelection(0);
                 //observationEarlyOrLate.clearCheck();
                 //reset other entries to default
             }
@@ -128,7 +117,7 @@ public class CaneInfoFragment extends BaseFragment {
         List<String> data = databaseHelper.lookupObservationsForBarcode(barcode);
         if(data != null)
             debugUtil.logMessage(TAG, "Got observations: (" + data.toString() + ")", run_environment);
-        else debugUtil.logMessage(TAG, "No observations found for (" + barcode + ")", run_environment);
+
         if(databaseHelper != null) databaseHelper.close();
     }
 

@@ -68,7 +68,22 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         textCaneFloweringStart.setOnClickListener(this);
         textCaneFloweringFinish.setOnClickListener(this);
 
+        clearInputs();
 
+    }
+
+    private void clearInputs() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textVineBudBreakStart.setText("");
+                textCaneBudBreakStart.setText("");
+                textCaneBudBreakFinish.setText("");
+                textVineFloweringStart.setText("");
+                textCaneFloweringStart.setText("");
+                textCaneFloweringFinish.setText("");
+            }
+        });
     }
 
     @Override

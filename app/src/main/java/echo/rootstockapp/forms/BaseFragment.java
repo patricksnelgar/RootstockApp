@@ -1,27 +1,21 @@
 package echo.rootstockapp.forms;
 
-import android.R.color;
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
-import android.widget.Toast;
-import echo.rootstockapp.DebugUtil;
-import java.util.List;
 import android.widget.TextView;
-import android.support.v7.widget.AppCompatSpinner;
+import android.widget.Toast;
 
+import java.util.List;
+
+import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.MeasurementText;
-
 import echo.rootstockapp.R;
 
 public class BaseFragment extends Fragment {
@@ -34,19 +28,16 @@ public class BaseFragment extends Fragment {
     private DebugUtil debugUtil;
     private String run_environment;
     private Button buttonSave;
-    private Button buttonEnable;
     
    
     protected View inflateFragment(int resId, LayoutInflater inflator, ViewGroup container) {
-        View v = inflator.inflate(resId, container, false);
+        View v = inflator.inflate(resId, container,false);
 
         header = (RelativeLayout) v.findViewById(R.id.include_header);
         footer = (RelativeLayout) v.findViewById(R.id.include_footer);
         textFieldBarcode = (TextView) header.findViewById(R.id.barcode);
         textFieldBarcode.setOnClickListener(barcodeOnClickListener);
         buttonSave = (Button) footer.findViewById(R.id.button_save);
-
-        buttonEnable = (Button) footer.findViewById(R.id.button_enable);
 
         Context c = getActivity();
 
@@ -141,10 +132,6 @@ public class BaseFragment extends Fragment {
         buttonSave.setOnClickListener(listener);
     }
 
-    public void registerListener(View.OnClickListener l){
-        buttonEnable.setOnClickListener(l);
-    }
-    
     public void showToastNotification(final String message){
         getActivity().runOnUiThread(new Runnable() {
             @Override

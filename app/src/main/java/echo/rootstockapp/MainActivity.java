@@ -17,13 +17,13 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
-import echo.rootstockapp.dialogs.LoadDataDialog;
-import echo.rootstockapp.dialogs.NetworkLoginDialog;
-import echo.rootstockapp.forms.BaseFragment;
-import echo.rootstockapp.forms.CaneInfoFragment;
-import echo.rootstockapp.forms.BudBreakFragment;
 import java.io.File;
 import java.util.List;
+
+import echo.rootstockapp.dialogs.LoadDataDialog;
+import echo.rootstockapp.dialogs.NetworkLoginDialog;
+import echo.rootstockapp.forms.BudBreakFragment;
+import echo.rootstockapp.forms.CaneInfoFragment;
 
 
 /*
@@ -32,8 +32,11 @@ import java.util.List;
  */
 
 public class MainActivity extends AppCompatActivity implements AppLoginFragment.OnLoginVerifyListener, LoadDataDialog.OnIdentifierDataReceivedListener, ScannerManager.BarcodeFoundListener {
-    final String TAG = "echo.rootstock";
+    
+    private final String TAG = MainActivity.class.getSimpleName();
 
+    public static String AUTHORIZATION_KEY ="ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d";
+    
     private String API_URL;
     private String API_username;
     private String API_pw;
@@ -234,9 +237,10 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
         if(lockMenu){
             // Disable menu items that should not be accessible,
             // eg. PFR login
-            menu.findItem(R.id.menu_load_data).setEnabled(false);
+            menu.findItem(R.id.menu_load_identifiers).setEnabled(false);
             menu.findItem(R.id.menu_authenticate).setEnabled(false);
             menu.findItem(R.id.menu_change_form).setEnabled(false);
+            menu.findItem(R.id.menu_load_observations).setEnabled(false);
         }
         return true;
     }
@@ -249,12 +253,16 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
                 NetworkLoginDialog n = new NetworkLoginDialog();
                 n.show(getSupportFragmentManager(), "PFR_ Login");
                 return true;
-            case R.id.menu_load_data:
-                LoadDataDialog d = new LoadDataDialog();
-                d.show(getSupportFragmentManager(), "Load data");
-                break;
+            case R.id.menu_load_identifiers:
+                LoadDataDialog d = LoadDataDialog.newInstance(LoadDataDialog.ACTIONS.IDENTIFIERS, "Load identifiers");
+                d.show(getSupportFragmentManager(), "Load identifiers");
+                return true;
             case R.id.menu_change_form:
                 showFormSelectionDialog();
+                return true;
+            case R.id.menu_load_observations:
+                LoadDataDialog o = LoadDataDialog.newInstance(LoadDataDialog.ACTIONS.OBSERVATIONS, "Load observations");
+                o.show(getSupportFragmentManager(), "Load observations");
                 return true;
         }
 
@@ -265,8 +273,9 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     public boolean onPrepareOptionsMenu(Menu menu){
         // re-enable menu options once the app has been 'unlocked' via PIN
         menu.findItem(R.id.menu_authenticate).setEnabled(!lockMenu);
-        menu.findItem(R.id.menu_load_data).setEnabled(!lockMenu);
+        menu.findItem(R.id.menu_load_identifiers).setEnabled(!lockMenu);
         menu.findItem(R.id.menu_change_form).setEnabled(!lockMenu);
+        menu.findItem(R.id.menu_load_observations).setEnabled(!lockMenu);
         return true;
     }
 

@@ -10,6 +10,7 @@ import echo.rootstockapp.DbContract.*;
 import echo.rootstockapp.DbContract.IdentifierColumnNames;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.LineNumberReader;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class DbHelper extends SQLiteOpenHelper {
         debugUtil = new DebugUtil();
     }
 
-    public boolean insertIdentifiers(final File f){
+    public void insertIdentifiers(final File f){
        
         dbProgressListener.setProgressText("Writing to DB:");
         final SQLiteDatabase db = this.getWritableDatabase();
@@ -58,17 +59,11 @@ public class DbHelper extends SQLiteOpenHelper {
             @Override
             public void run(){
                 try{
-                    LineNumberReader lr = new LineNumberReader(new FileReader(f));
-                    lr.skip(Long.MAX_VALUE);
-                    int maxCount = lr.getLineNumber();
+                    int maxCount = getNumLinesInFile(f);
                     BufferedReader br = new BufferedReader(new FileReader(f));
                     String[] headers = br.readLine().split(",");
                     debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
                    
-
-                    // Clear all records from the db for now
-                    db.execSQL("DELETE FROM " + DbCaneIdentifiers.TABLE_NAME);
-                    db.execSQL("DELETE FROM " + DbComponentIdentifiers.TABLE_NAME);
                     db.beginTransaction();
 
                     ContentValues _v = new ContentValues();
@@ -77,7 +72,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
                     int count = 0;
                     long rowID;
-                    String line = "";
+                    String line;
 
                     while(true){
                         line = br.readLine();
@@ -122,8 +117,23 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
             }
         }).start();
-       
-        return false;
+
+    }
+
+    public void insertObservations(final File file){
+        dbProgressListener.setProgressText("Inserting observations: ");
+        final SQLiteDatabase db = this.getWritableDatabase();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+
+                } catch (Exception e){
+                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                }
+            }
+        }).start();
     }
 
     public List<String> lookupIdentifier(String barcode){
@@ -308,6 +318,16 @@ public class DbHelper extends SQLiteOpenHelper {
         debugUtil.logMessage(TAG, "User wants to save data: (" + data.toString() + ")", run_environment);
         
         return false;
+    }
+
+    private int getNumLinesInFile(final File file){
+        try {
+            LineNumberReader lr = new LineNumberReader(new FileReader(file));
+            lr.skip(Long.MAX_VALUE);
+            return lr.getLineNumber();
+        } catch (Exception fe){
+            debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        }
     }
 
     /*

@@ -8,8 +8,12 @@
         android:title="Login"
         app:showAsAction="never" />
     <item
-        android:id="@+id/menu_load_data"
-        android:title="Load data"
+        android:id="@+id/menu_load_identifiers"
+        android:title="Load identifiers"
+        app:showAsAction="never" />
+    <item 
+        android:id="@+id/menu_load_observations"
+        android:title="Load observations"
         app:showAsAction="never" />
     <item
         android:id="@+id/menu_change_form"

@@ -1,58 +1,45 @@
 package echo.rootstockapp.dialogs;
 
-import android.R.layout;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.PrintWriterPrinter;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
-import cz.msebera.android.httpclient.Header;
-import echo.rootstockapp.DbHelper.DbProgressListener;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileReader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import android.os.Bundle;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
-import okhttp3.Response;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import echo.rootstockapp.R;
-import echo.rootstockapp.DebugUtil;
+import cz.msebera.android.httpclient.Header;
 import echo.rootstockapp.DbHelper;
+import echo.rootstockapp.DebugUtil;
+import echo.rootstockapp.R;
+
+import static echo.rootstockapp.MainActivity.AUTHORIZATION_KEY;
 
 
 public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
 
     private final String TAG = LoadDataDialog.class.getSimpleName();
-    private final String authourizationKey = "ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d";
+    private final String all_observations_codes = "1,2,3,6,7";
+    public static String ACTION_KEY = "action";
+    public static String TITLE_KEY = "title";
 
     private DebugUtil debugUtil;
     private Dialog dialog;
@@ -63,14 +50,18 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     private Spinner spinnerSite;
     private Spinner spinnerBlock;
     private TextView textResponseMessage;
+    private TextView textTitle;
     private ProgressBar progressBar;
     private TextView textProgressbarMessage;
     private RelativeLayout progressBarHolder;
     private boolean isFirstSelection = true; // Need this to prevent data loading when spinner is created
+    private boolean lockResponses = false;
     private String site = null;
     private String block = null;
     private AsyncHttpClient asyncHttpClient;
     private DbHelper databaseHelper;
+
+    private ACTIONS formAction;
 
     List<String> listSites = new ArrayList<String>(Arrays.asList("Choose a site"));
     List<String> listCodes = new ArrayList<String>(Arrays.asList("null"));
@@ -78,6 +69,11 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
     ArrayAdapter<String> adapterSites;
     ArrayAdapter<String> adapterBlocks;
+
+    public enum ACTIONS {
+        IDENTIFIERS,
+        OBSERVATIONS
+    }
 
     private OnIdentifierDataReceivedListener onIdentifierDataReceivedListener;
 
@@ -95,11 +91,21 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         }
     }
 
+    public static LoadDataDialog newInstance(ACTIONS action, String title){
+        LoadDataDialog d = new LoadDataDialog();
+        Bundle argsObs = new Bundle();
+        argsObs.putSerializable(LoadDataDialog.ACTION_KEY, action);
+        argsObs.putString(LoadDataDialog.TITLE_KEY, title);
+        d.setArguments(argsObs);
+
+        return d;
+    }
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
         asyncHttpClient = new AsyncHttpClient();
-        asyncHttpClient.addHeader("Authorization", authourizationKey);
+        asyncHttpClient.addHeader("Authorization", AUTHORIZATION_KEY);
 
         databaseHelper = new DbHelper(getActivity().getApplicationContext(), this);
 
@@ -120,6 +126,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         progressBar = (ProgressBar) dialog.findViewById(R.id.progress_bar);
         progressBarHolder = (RelativeLayout) dialog.findViewById(R.id.progress_holder);
         textProgressbarMessage = (TextView) dialog.findViewById(R.id.text_progress_bar_label);
+        textTitle = (TextView) dialog.findViewById(R.id.headerTitle);
 
         ((Button) dialog.findViewById(R.id.button_cancel)).setOnClickListener(onCancelClickListener);
         ((Button) dialog.findViewById(R.id.button_load)).setOnClickListener(onLoadDataClickListener);
@@ -136,7 +143,15 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         adapterBlocks.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBlock.setAdapter(adapterBlocks);
         spinnerBlock.setOnItemSelectedListener(onBlockSelectedListerner);
-        
+
+        Bundle bundle = getArguments();
+        if(bundle != null) {
+            setDialogTitle(bundle.getString(TITLE_KEY, "Error"));
+            formAction = (ACTIONS) bundle.getSerializable(ACTION_KEY);
+
+        }
+
+
         return dialog;
     }
 
@@ -166,6 +181,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                     } catch(Exception e){
                         debugUtil.logMessage(TAG, "couldnt parse string into JSON: " + e.getLocalizedMessage(), run_environment);
                         setResponseTextNegative("Failed to load sites");
+                        lockResponses = true;
                     }
                 } else
                     setResponseTextNegative("Failed to load sites");
@@ -238,10 +254,23 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             return;
         }
 
-        hideResponses();        
+        hideResponses();
+
+        String url = API_URL + "/fdc/";
+        //debugUtil.logMessage(TAG, "Form action is (" + formAction + ")", run_environment);
+        switch(formAction){
+            case IDENTIFIERS:
+                url += "download/" + site + "/" + block;
+                break;
+            case OBSERVATIONS:
+                url += "observations/" + site + "/" + block + "/" + all_observations_codes;
+                break;
+        }
+
+        //debugUtil.logMessage(TAG, "URL is: <" + url + ">", run_environment);
 
         // build query for kakapo        
-        asyncHttpClient.get(API_URL + "/fdc/download/" + site + "/" + block, new AsyncHttpResponseHandler(){
+        asyncHttpClient.get(url, new AsyncHttpResponseHandler(){
             
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response){
@@ -250,10 +279,16 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 if(statusCode == 200 && responseString.length() > 0){
                     debugUtil.logMessage(TAG, "Response is: <" + responseString + ">", run_environment);
                     try {
-                    JSONObject json = new JSONObject(responseString);
-                    String path = json.getString("path");
-                    debugUtil.logMessage(TAG, "File path <" + path + ">", run_environment);
-                    saveIdentifiers(path);
+                        JSONObject json = new JSONObject(responseString);
+                        String path = json.getString("path");
+                        int rows = json.getInt("rows");
+                        if(rows <= 0) {
+                            setResponseTextNegative("No records found");
+
+                        } else {
+                            debugUtil.logMessage(TAG, "File path <" + path + ">", run_environment);
+                            saveFile(path);
+                        }
                     } catch (Exception e){
                         debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
                     }
@@ -268,7 +303,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         
     }
 
-    private void saveIdentifiers(String path){
+    private void saveFile(String path){
 
         setProgressText("Downloading data: ");        
 
@@ -279,7 +314,14 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 debugUtil.logMessage(TAG, "File get code: " + statusCode, run_environment);
                 
                 if(statusCode == 200 && response!=null){
-                    databaseHelper.insertIdentifiers(response);
+                    switch(formAction){
+                        case IDENTIFIERS:
+                            databaseHelper.insertIdentifiers(response);
+                            break;
+                        case OBSERVATIONS:
+                            databaseHelper.insertObservations(response);
+                            break;
+                    }
                 }
             }
 
@@ -296,6 +338,15 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
     }
 
+    private void setDialogTitle(final String title){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textTitle.setText(title);
+            }
+        });
+    }
+
     private void hideResponses(){
         textResponseMessage.setVisibility(View.GONE);
         progressBarHolder.setVisibility(View.GONE);
@@ -308,14 +359,21 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     }
     
     @Override
-    public void setProgressText(String t){
-        textResponseMessage.setVisibility(View.INVISIBLE);
-        progressBarHolder.setVisibility(View.VISIBLE);
-        textProgressbarMessage.setText(t);
+    public void setProgressText(final String t){
+        if(lockResponses) return;
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textResponseMessage.setVisibility(View.INVISIBLE);
+                progressBarHolder.setVisibility(View.VISIBLE);
+                textProgressbarMessage.setText(t);
+            }
+        });
     }
 
     @Override
     public void setResponseTextPositive(final String message){
+        if(lockResponses) return;
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -330,6 +388,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
     @Override
     public void setResponseTextNegative(final String message){
+        if(lockResponses) return;
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
