@@ -1,40 +1,45 @@
 package echo.rootstockapp.dialogs;
 
 import android.app.DatePickerDialog;
-import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
+import java.util.Calendar;
+
+import echo.rootstockapp.R;
+
 public class DateSelectionDialog extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private TextView activatorView;
 
-    public DateSelectionDialog(View v){
-        activatorView = (TextView) v;
-    }
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
+        int day, month, year;
+        // Initialize the date picker to have todays date unless otherwise edited.
         final Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH);
+        day = calendar.get(Calendar.DAY_OF_MONTH);
 
+        // args have been set giving initial date
+        if (getArguments() != null) {
+            String[] split = getArguments().getString(getString(R.string.START_DATE)).split("/");
+            try {
+                // parse the split date into Integer format
+                // format: dd/mm/yyyy (2/11/2017)
+                day = Integer.parseInt(split[0]);
+                month = Integer.parseInt(split[1]);
+                year = Integer.parseInt(split[2]);
+            } catch (Exception e) {
+
+            }
+        }
         return new DatePickerDialog(getActivity(), this, year, month, day);
-    }
-
-    @Override
-    public void onDateSet(DatePicker dateView, int year, int month, int day){
-        
-        // Increment as returned value is 0 indexed
-        month++;
-        updateView(day,month,year);
     }
 
     private void updateView(final int day, final int month, final int year){
@@ -46,4 +51,19 @@ public class DateSelectionDialog extends DialogFragment implements DatePickerDia
             }
         });
     }
+
+    public void setActivatorView(View v) {
+        activatorView = (TextView) v;
+    }
+
+
+    @Override
+    public void onDateSet(DatePicker dateView, int year, int month, int day) {
+
+        // Increment as returned value is 0 indexed
+        month++;
+        updateView(day, month, year);
+    }
+
+
 }

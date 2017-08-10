@@ -1,10 +1,10 @@
 package echo.rootstockapp.dialogs;
 
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,28 +16,42 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
-
+import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 
-import echo.rootstockapp.DebugUtil;
-
-public class NetworkLoginDialog extends DialogFragment{
+public class NetworkLoginDialog extends DialogFragment {
 
     private final String TAG = NetworkLoginDialog.class.getSimpleName();
-    private final String authourizationKey = "ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d";
 
     private Dialog      dialog;
+    final View.OnClickListener buttonCancelOnClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            dialog.dismiss();
+        }
+    };
     private EditText    editUsername;
     private EditText    editPassword;
     private TextView    textResponse;
     private Button      buttonLogin;
     private Button      buttonCancel;
-
     private DebugUtil   debugUtil;
-
     private String      authenticateResponse;
     private String      API_URL;
-    private String      run_environment;    
+    private String run_environment;
+    private String AUTHORIZATION_KEY;
+    final View.OnClickListener buttonLoginOnClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            textResponse.setText("");
+            final String username = editUsername.getText().toString();
+            final String password = editPassword.getText().toString();
+
+            makeAuthenticateRequest(username, password);
+        }
+    };
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -59,8 +73,9 @@ public class NetworkLoginDialog extends DialogFragment{
         Context c = getActivity();
         SharedPreferences prefs = c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE);
 
-        run_environment = prefs.getString(c.getString(R.string.env), null);
-        API_URL = prefs.getString(c.getString(R.string.api), null);
+        run_environment = getString(R.string.run_environment);
+        API_URL = getString(R.string.API_URL);
+        AUTHORIZATION_KEY = getString(R.string.authorization_key);
 
         return dialog;
     }
@@ -72,8 +87,12 @@ public class NetworkLoginDialog extends DialogFragment{
             return;
         }
 
+        if (AUTHORIZATION_KEY == null) {
+            debugUtil.logMessage(TAG, "No API authorization key", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        }
+
         AsyncHttpClient client = new AsyncHttpClient();
-        client.addHeader("Authorization", authourizationKey);
+        client.addHeader("Authorization", AUTHORIZATION_KEY);
         RequestParams params = new RequestParams();
         params.put("username", username);
         params.put("password", password);
@@ -89,16 +108,16 @@ public class NetworkLoginDialog extends DialogFragment{
                     textResponse.setText("Login successful");
                 } else {
                     textResponse.setTextColor(getActivity().getResources().getColor(R.color.colorTextError, null));
-                    textResponse.setText("Error logging in");   
+                    textResponse.setText("Error logging in");
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers,  byte[] response, Throwable error){
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, DebugUtil.LOG_LEVEL_ERROR, run_environment); 
-                textResponse.setTextColor(R.color.colorTextError);
-                textResponse.setText("Error logging in");                    
+                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                textResponse.setTextColor(getActivity().getResources().getColor(R.color.colorTextError, null));
+                textResponse.setText("Error logging in");
             }
         });
     }
@@ -106,24 +125,4 @@ public class NetworkLoginDialog extends DialogFragment{
     private void setResponse(String r){
         authenticateResponse = r;
     }
-
-    final View.OnClickListener buttonLoginOnClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v){
-            textResponse.setText("");
-            final String username = editUsername.getText().toString();
-            final String password = editPassword.getText().toString();
-            
-            makeAuthenticateRequest(username, password);
-        }
-    };
-
-    final View.OnClickListener buttonCancelOnClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v){
-            dialog.dismiss();
-        }
-    };
 }

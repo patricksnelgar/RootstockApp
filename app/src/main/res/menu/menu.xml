@@ -20,6 +20,10 @@
         android:title="Change form"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_clear_db"
+        android:title="Clear DB"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_help"
         android:title="Help"
         app:showAsAction="never" />

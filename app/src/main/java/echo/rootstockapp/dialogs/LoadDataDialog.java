@@ -1,14 +1,11 @@
 package echo.rootstockapp.dialogs;
 
 import android.app.Dialog;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.app.DialogFragment;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -31,22 +28,30 @@ import echo.rootstockapp.DbHelper;
 import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 
-import static echo.rootstockapp.MainActivity.AUTHORIZATION_KEY;
-
 
 public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
 
-    private final String TAG = LoadDataDialog.class.getSimpleName();
-    private final String all_observations_codes = "1,2,3,6,7";
     public static String ACTION_KEY = "action";
     public static String TITLE_KEY = "title";
-
+    private final String TAG = LoadDataDialog.class.getSimpleName();
+    private final String all_observations_codes = "1,2,3,6,7";
+    List<String> listSites = new ArrayList<String>(Arrays.asList("Choose a site"));
+    List<String> listCodes = new ArrayList<String>(Arrays.asList("null"));
+    List<String> listBlocks = new ArrayList<String>(Arrays.asList("Choose a block"));
+    ArrayAdapter<String> adapterSites;
+    ArrayAdapter<String> adapterBlocks;
     private DebugUtil debugUtil;
     private Dialog dialog;
+    final View.OnClickListener onCancelClickListener = new View.OnClickListener() {
 
+        @Override
+        public void onClick(View v) {
+            dialog.dismiss();
+        }
+    };
     private String API_URL;
     private String run_environment;
-
+    private String AUTHORIZATION_KEY;
     private Spinner spinnerSite;
     private Spinner spinnerBlock;
     private TextView textResponseMessage;
@@ -58,38 +63,57 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     private boolean lockResponses = false;
     private String site = null;
     private String block = null;
-    private AsyncHttpClient asyncHttpClient;
-    private DbHelper databaseHelper;
+    final AdapterView.OnItemSelectedListener onBlockSelectedListerner = new AdapterView.OnItemSelectedListener() {
 
-    private ACTIONS formAction;
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View v, int index, long id) {
 
-    List<String> listSites = new ArrayList<String>(Arrays.asList("Choose a site"));
-    List<String> listCodes = new ArrayList<String>(Arrays.asList("null"));
-    List<String> listBlocks = new ArrayList<String>(Arrays.asList("Choose a block"));
+            debugUtil.logMessage(TAG, "User selected block at: <" + index + ">", run_environment);
+            if (index == 0) {
+                block = null;
+                return;
+            }
 
-    ArrayAdapter<String> adapterSites;
-    ArrayAdapter<String> adapterBlocks;
-
-    public enum ACTIONS {
-        IDENTIFIERS,
-        OBSERVATIONS
-    }
-
-    private OnIdentifierDataReceivedListener onIdentifierDataReceivedListener;
-
-    public interface OnIdentifierDataReceivedListener {
-        public boolean writeIdentifierData(File dataFile);
-    }
-
-    @Override
-    public void onAttach(Context context){
-        super.onAttach(context);
-        try {
-            onIdentifierDataReceivedListener = (OnIdentifierDataReceivedListener) context;
-        } catch (ClassCastException e){
-            throw new ClassCastException(context.toString() + " must implement method writeIdentifierData(File f)");
+            block = listBlocks.get(index);
         }
-    }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+    private AsyncHttpClient asyncHttpClient;
+    final AdapterView.OnItemSelectedListener onSiteSelectedListener = new AdapterView.OnItemSelectedListener() {
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View v, int index, long id) {
+            debugUtil.logMessage(TAG, "User selected site at: <" + index + ">", run_environment);
+            // User selected the default 'no choice' option.
+            if (index == 0) {
+                site = null;
+                return;
+            }
+
+            site = listCodes.get(index);
+            listBlocks.clear();
+            listBlocks.add("Choose a block");
+            loadBlocksFromSiteCode(site);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+    private DbHelper databaseHelper;
+    private ACTIONS formAction;
+    final View.OnClickListener onLoadDataClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            makeDataRequest();
+        }
+    };
 
     public static LoadDataDialog newInstance(ACTIONS action, String title){
         LoadDataDialog d = new LoadDataDialog();
@@ -97,12 +121,20 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         argsObs.putSerializable(LoadDataDialog.ACTION_KEY, action);
         argsObs.putString(LoadDataDialog.TITLE_KEY, title);
         d.setArguments(argsObs);
-
         return d;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
+
+        AUTHORIZATION_KEY = getActivity().getString(R.string.authorization_key);
+        API_URL = getActivity().getString(R.string.API_URL);
+        run_environment = getActivity().getString(R.string.run_environment);
+
+        if (AUTHORIZATION_KEY == null && API_URL == null) {
+            debugUtil.logMessage(TAG, "Access arguments not set", run_environment);
+            return null;
+        }
 
         asyncHttpClient = new AsyncHttpClient();
         asyncHttpClient.addHeader("Authorization", AUTHORIZATION_KEY);
@@ -110,12 +142,6 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         databaseHelper = new DbHelper(getActivity().getApplicationContext(), this);
 
         debugUtil = new DebugUtil();
-
-        Context c = getActivity();
-        SharedPreferences prefs = c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE);
-
-        run_environment = prefs.getString(c.getString(R.string.env), null);
-        API_URL = prefs.getString(c.getString(R.string.api), null);
 
         dialog = super.onCreateDialog(savedInstanceState);
         dialog.setContentView(R.layout.load_data_layout);
@@ -128,17 +154,17 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         textProgressbarMessage = (TextView) dialog.findViewById(R.id.text_progress_bar_label);
         textTitle = (TextView) dialog.findViewById(R.id.headerTitle);
 
-        ((Button) dialog.findViewById(R.id.button_cancel)).setOnClickListener(onCancelClickListener);
-        ((Button) dialog.findViewById(R.id.button_load)).setOnClickListener(onLoadDataClickListener);
+        dialog.findViewById(R.id.button_cancel).setOnClickListener(onCancelClickListener);
+        dialog.findViewById(R.id.button_load).setOnClickListener(onLoadDataClickListener);
 
         loadSites();
-        
+
         adapterSites = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, listSites);
         adapterSites.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSite.setAdapter(adapterSites);
         spinnerSite.setOnItemSelectedListener(onSiteSelectedListener);
 
-        
+
         adapterBlocks = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, listBlocks);
         adapterBlocks.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBlock.setAdapter(adapterBlocks);
@@ -148,9 +174,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         if(bundle != null) {
             setDialogTitle(bundle.getString(TITLE_KEY, "Error"));
             formAction = (ACTIONS) bundle.getSerializable(ACTION_KEY);
-
         }
-
 
         return dialog;
     }
@@ -168,7 +192,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 if(statusCode == 200 && responseString.length() > 0){
                     hideResponses();
                     try {
-                        //JSONObject parsedResponse = new JSONObject(responseString);  
+                        //JSONObject parsedResponse = new JSONObject(responseString);
                         JSONArray tok = new JSONArray(responseString);
                         debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
                         for(int i = 0; i < tok.length(); i++){
@@ -176,7 +200,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                             debugUtil.logMessage(TAG, "code: " + _obj.getString("code"), run_environment);
                             addSite(_obj.getString("code"), _obj.getString("name"));
                         }
-                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);                 
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);
                         //addSite(parsedResponse.getString("code"));
                     } catch(Exception e){
                         debugUtil.logMessage(TAG, "couldnt parse string into JSON: " + e.getLocalizedMessage(), run_environment);
@@ -187,7 +211,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                     setResponseTextNegative("Failed to load sites");
             }
 
-            @Override 
+            @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error){
                 String responseString = new String(response);
                 debugUtil.logMessage(TAG, "Failed with code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
@@ -216,7 +240,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 if(statusCode == 200 && responseString.length() > 0){
                     hideResponses();
                     try {
-                        //JSONObject parsedResponse = new JSONObject(responseString);  
+                        //JSONObject parsedResponse = new JSONObject(responseString);
                         JSONArray tok = new JSONArray(responseString);
                         debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
                         for(int i = 0; i < tok.length(); i++){
@@ -224,7 +248,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                             debugUtil.logMessage(TAG, "code: " + _obj.getString("block"), run_environment);
                             addBlock(_obj.getString("block"));
                         }
-                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);                 
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);
                         //addSite(parsedResponse.getString("code"));
                     } catch(Exception e){
                         debugUtil.logMessage(TAG, "couldnt parse string into JSON: " + e.getLocalizedMessage(), run_environment);
@@ -234,13 +258,13 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                     setResponseTextNegative("Failed to load sites");
             }
 
-            @Override 
+            @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error){
                 String responseString = new String(response);
                 debugUtil.logMessage(TAG, "Failed with code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
                 setResponseTextNegative("Failed to load sites");
             }
-        });       
+        });
     }
 
     private void addBlock(String blockNum){
@@ -269,9 +293,9 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
         //debugUtil.logMessage(TAG, "URL is: <" + url + ">", run_environment);
 
-        // build query for kakapo        
+        // build query for kakapo
         asyncHttpClient.get(url, new AsyncHttpResponseHandler(){
-            
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response){
                 String responseString = new String(response);
@@ -300,19 +324,19 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 debugUtil.logMessage(TAG, "onFailure ["+statusCode+"]: response size<" + response.length + ">", run_environment);
             }
         });
-        
+
     }
 
     private void saveFile(String path){
 
-        setProgressText("Downloading data: ");        
+        setProgressText("Downloading data: ");
 
         asyncHttpClient.get("http://dev.kakapo.pfr.co.nz:8600/"+path, new FileAsyncHttpResponseHandler(getActivity().getApplicationContext()){
-            
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, File response){
                 debugUtil.logMessage(TAG, "File get code: " + statusCode, run_environment);
-                
+
                 if(statusCode == 200 && response!=null){
                     switch(formAction){
                         case IDENTIFIERS:
@@ -351,13 +375,13 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         textResponseMessage.setVisibility(View.GONE);
         progressBarHolder.setVisibility(View.GONE);
     }
-    
+
     @Override
     public void updateProgress(int progress, int total){
         progressBar.setMax(total);
         progressBar.setProgress(progress);
     }
-    
+
     @Override
     public void setProgressText(final String t){
         if(lockResponses) return;
@@ -383,7 +407,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 textResponseMessage.setText(message);
             }
         });
-        
+
     }
 
     @Override
@@ -407,62 +431,8 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             databaseHelper.close();
     }
 
-    final AdapterView.OnItemSelectedListener onSiteSelectedListener = new AdapterView.OnItemSelectedListener() {
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View v, int index, long id) {
-            debugUtil.logMessage(TAG, "User selected site at: <" + index + ">",  run_environment);
-            // User selected the default 'no choice' option.
-            if(index == 0) {
-                site = null;
-                return;
-            }
-
-            site =  listCodes.get(index);
-            listBlocks.clear(); 
-            listBlocks.add("Choose a block");      
-            loadBlocksFromSiteCode(site);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
-    };
-
-    final AdapterView.OnItemSelectedListener onBlockSelectedListerner = new AdapterView.OnItemSelectedListener() {
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View v, int index, long id){
-
-            debugUtil.logMessage(TAG, "User selected block at: <" + index + ">",  run_environment);
-            if(index == 0){
-                block = null;
-                return;
-            }
-
-            block = listBlocks.get(index);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent){
-
-        }
-    };
-
-    final View.OnClickListener onCancelClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v){
-            dialog.dismiss();
-        }
-    };
-
-    final View.OnClickListener onLoadDataClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            makeDataRequest();
-        }
-    };
+    public enum ACTIONS {
+        IDENTIFIERS,
+        OBSERVATIONS
+    }
 }

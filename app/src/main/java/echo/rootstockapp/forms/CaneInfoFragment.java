@@ -21,10 +21,13 @@ import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.MeasurementText;
 import echo.rootstockapp.R;
 
+/**
+ * Fragment that displays input fields for gathering cane level information
+ */
 public class CaneInfoFragment extends BaseFragment {
 
     private static String TAG = CaneInfoFragment.class.getSimpleName();
-    
+
     private String run_environment;
     private RelativeLayout caneInfoHolder;
     private MeasurementText observationCaneLength;
@@ -32,10 +35,39 @@ public class CaneInfoFragment extends BaseFragment {
     private CheckBox observationCaneExists;
     private Spinner observationCaneType;
     private DebugUtil debugUtil;
+    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
+
+
+        @Override
+        public void onClick(View view) {
+
+            String user = getUser();
+            String barcode = getBarcode();
+            String stringCaneLength = observationCaneLength.getText().toString();
+            String stringCaneDiameter = observationCaneDiameter.getText().toString();
+            boolean boolCaneExists = observationCaneExists.isChecked();
+
+            if (user != null) {
+                debugUtil.logMessage(TAG, "User (" + user + ") wants to save data for (" + barcode + ")", run_environment);
+
+                List<String> data = new ArrayList<String>();
+                data.add(barcode);
+                data.add(stringCaneLength);
+                data.add(stringCaneDiameter);
+                data.add(String.valueOf(boolCaneExists));
+
+
+                DbHelper databaseHelper = new DbHelper(getActivity());
+                databaseHelper.saveCaneData(data);
+                if (databaseHelper != null) databaseHelper.close();
+            } else {
+                showToastNotification("Username required to save data");
+            }
+        }
+    };
     private Button buttonSave;
     private TextView textCm;
     private TextView textMm;
-
     private ArrayAdapter<String> adapterCaneType;
     private List<String> listCaneTypes;
 
@@ -70,6 +102,49 @@ public class CaneInfoFragment extends BaseFragment {
         return v;
     }
 
+    private void clearInputs() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                observationCaneLength.setText("");
+                observationCaneDiameter.setText("");
+                observationCaneType.setSelection(0);
+                //observationEarlyOrLate.clearCheck();
+                //reset other entries to default
+            }
+        });
+    }
+
+    private void populateDataFields(final List<String[]> _observations) {
+        if (_observations == null) return;
+
+        for (String[] measurement : _observations) {
+
+            /**
+             * Switch on the measurement _ID
+             *
+             * 1 - BB start date (cane)
+             * 2 - BB Finish date (cane)
+             * 3 - Flower start date (cane)
+             * 4 -
+             * 5 -
+             * 6 - Flower finish date (cane)
+             * 7 - General comment
+             * ?
+             */
+            switch (measurement[0]) {
+
+                case "7":
+                    // Need to implement comment field first
+                    debugUtil.logMessage(TAG, "Comment is (" + measurement[1] + ")", run_environment);
+                    break;
+                default:
+                    debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
+                    break;
+            }
+        }
+    }
+
     @Override
     public void onBarcodeFound(List<String> identifier){
         super.onBarcodeFound(identifier);
@@ -77,7 +152,6 @@ public class CaneInfoFragment extends BaseFragment {
         // Do stuff for this form type
         // like load data from the observation table
         clearInputs();
-        loadCaneData(identifier.get(1));
         enableInputs(caneInfoHolder);
         enableComponent(observationCaneType);
 
@@ -91,62 +165,13 @@ public class CaneInfoFragment extends BaseFragment {
                 caneInfoHolder.setBackgroundColor(Color.parseColor("#fafafa"));
             }
         });
+
+        populateDataFields(loadCaneObservationsById(identifier.get(0)));
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
-        
+
     }
-
-    private void clearInputs(){
-        getActivity().runOnUiThread(new Runnable(){
-            @Override
-            public void run(){
-                observationCaneLength.setText("");
-                observationCaneDiameter.setText("");
-                observationCaneType.setSelection(0);
-                //observationEarlyOrLate.clearCheck();
-                //reset other entries to default
-            }
-        });
-    }
-    
-    private void loadCaneData(String barcode){
-        DbHelper databaseHelper = new DbHelper(getActivity());
-        List<String> data = databaseHelper.lookupObservationsForBarcode(barcode);
-        if(data != null)
-            debugUtil.logMessage(TAG, "Got observations: (" + data.toString() + ")", run_environment);
-
-        if(databaseHelper != null) databaseHelper.close();
-    }
-
-    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener(){
-
-        @Override
-        public void onClick(View view){
-            String user = getUser();
-            String barcode = getBarcode();
-            String stringCaneLength = observationCaneLength.getText().toString();
-            String stringCaneDiameter = observationCaneDiameter.getText().toString();
-            boolean boolCaneExists = observationCaneExists.isChecked();
-            
-            if(user != null){
-                debugUtil.logMessage(TAG, "User (" + user + ") wants to save data for (" + barcode + ")", run_environment);
-                
-                List<String> data = new ArrayList<String>();
-                data.add(barcode);
-                data.add(stringCaneLength);
-                data.add(stringCaneDiameter);
-                data.add(String.valueOf(boolCaneExists));
-               
-
-                DbHelper databaseHelper = new DbHelper(getActivity());
-                databaseHelper.saveCaneData(data);
-                if(databaseHelper != null) databaseHelper.close();
-            } else {
-                showToastNotification("Username required to save data");
-            }
-        }
-    };   
 }

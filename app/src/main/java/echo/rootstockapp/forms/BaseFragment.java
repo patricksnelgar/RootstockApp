@@ -1,7 +1,7 @@
 package echo.rootstockapp.forms;
 
+import android.app.Fragment;
 import android.content.Context;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import echo.rootstockapp.DbHelper;
 import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.MeasurementText;
 import echo.rootstockapp.R;
@@ -27,9 +28,15 @@ public class BaseFragment extends Fragment {
     private TextView textFieldBarcode;
     private DebugUtil debugUtil;
     private String run_environment;
+    final View.OnClickListener barcodeOnClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View view) {
+            debugUtil.logMessage(TAG, "## show user list of barcodes / FPIs", run_environment);
+        }
+    };
     private Button buttonSave;
-    
-   
+
     protected View inflateFragment(int resId, LayoutInflater inflator, ViewGroup container) {
         View v = inflator.inflate(resId, container,false);
 
@@ -61,22 +68,13 @@ public class BaseFragment extends Fragment {
     }
 
     private boolean isInputField(View _view){
-        
+
         if(_view instanceof MeasurementText) return true;
         if(_view instanceof CheckBox) return true;
         if(_view instanceof EditText) return true;
         //if(_view instanceof Spinner) return true;
 
         return false;
-    }
-
-    public void showView(final ViewGroup v){
-        getActivity().runOnUiThread(new Runnable(){
-            @Override
-            public void run(){
-                v.setVisibility(View.VISIBLE);
-            }
-        });
     }
 
     public void enableInputs(final ViewGroup v){
@@ -98,25 +96,30 @@ public class BaseFragment extends Fragment {
     }
 
     public void enableComponent(final View v){
-        getActivity().runOnUiThread(new Runnable(){ 
+        getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 v.setEnabled(true);
             }
         });
     }
-    
+
     private void enableFooter(){
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 buttonSave.setEnabled(true);
             }
-        });      
+        });
     }
 
-    public String getRunEnvironment(){ 
-        return run_environment; 
+    public List<String[]> loadCaneObservationsById(String _ID) {
+        DbHelper databaseHelper = new DbHelper(getActivity());
+        return databaseHelper.getCaneObservationById(_ID);
+    }
+
+    public String getRunEnvironment() {
+        return run_environment;
     }
 
     public String getUser(){
@@ -124,8 +127,8 @@ public class BaseFragment extends Fragment {
         return c.getSharedPreferences(c.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(c.getString(R.string.username), null);
     }
 
-    public String getBarcode() { 
-        return ((TextView) header.findViewById(R.id.barcode)).getText().toString(); 
+    public String getBarcode() {
+        return ((TextView) header.findViewById(R.id.barcode)).getText().toString();
     }
 
     public void registerSaveButton(View.OnClickListener listener){
@@ -140,12 +143,4 @@ public class BaseFragment extends Fragment {
             }
         });
     }
-
-    final View.OnClickListener barcodeOnClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View view){
-            debugUtil.logMessage(TAG, "## show user list of barcodes / FPIs", run_environment);
-        }
-    };
 }

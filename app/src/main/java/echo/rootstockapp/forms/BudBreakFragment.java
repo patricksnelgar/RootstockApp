@@ -1,21 +1,17 @@
 package echo.rootstockapp.forms;
 
-import android.app.DatePickerDialog.OnDateSetListener;
-import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import echo.rootstockapp.DebugUtil;
-import android.app.DatePickerDialog;
 
+import java.util.List;
+
+import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 import echo.rootstockapp.dialogs.DateSelectionDialog;
-import java.util.List;
 
 public class BudBreakFragment extends BaseFragment implements View.OnClickListener {
     
@@ -23,9 +19,16 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
 
     private String run_environment;
     private DebugUtil debugUtil;
+    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
 
+        @Override
+        public void onClick(View view) {
+
+            String user = getUser();
+            debugUtil.logMessage(TAG, "User (" + user + ") wants to save data", run_environment);
+        }
+    };
     private RelativeLayout budBreakForm;
-
     private TextView textVineBudBreakStart;
     private TextView textCaneBudBreakStart;
     private TextView textCaneBudBreakFinish;
@@ -55,23 +58,6 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         return v;
     }
 
-    @Override
-    public void onBarcodeFound(List<String> identifier){
-        super.onBarcodeFound(identifier);
-        
-        enableInputs(budBreakForm);
-
-        textVineBudBreakStart.setOnClickListener(this);
-        textCaneBudBreakStart.setOnClickListener(this);
-        textCaneBudBreakFinish.setOnClickListener(this);
-        textVineFloweringStart.setOnClickListener(this);
-        textCaneFloweringStart.setOnClickListener(this);
-        textCaneFloweringFinish.setOnClickListener(this);
-
-        clearInputs();
-
-    }
-
     private void clearInputs() {
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -86,22 +72,92 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         });
     }
 
+    private void populateDataFields(List<String[]> _observations) {
+        if (_observations == null) return;
+
+        for (final String[] measurement : _observations) {
+            /**
+             * Switch on the measurement _ID
+             *
+             * 1 - BB start date (cane)
+             * 2 - BB Finish date (cane)
+             * 3 - Flower start date (cane)
+             * 4 -
+             * 5 -
+             * 6 - Flower finish date (cane)
+             * 7 - General comment
+             * ?
+             */
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    switch (measurement[0]) {
+                        case "1":
+                            textCaneBudBreakStart.setText(parseDate(measurement[1]));
+                            break;
+                        case "2":
+                            textCaneBudBreakFinish.setText(parseDate(measurement[1]));
+                            break;
+                        case "3":
+                            textCaneFloweringStart.setText(parseDate(measurement[1]));
+                            break;
+                        case "6":
+                            textCaneFloweringFinish.setText(parseDate(measurement[1]));
+                            break;
+                        default:
+                            debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    private String parseDate(String date) {
+        try {
+            String[] dateSplit = date.split("-");
+            String returnDate = dateSplit[2] + "/" + dateSplit[1] + "/" + dateSplit[0];
+            debugUtil.logMessage(TAG, "output date (" + returnDate + ")", run_environment);
+            return returnDate;
+        } catch (Exception e) {
+            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            return null;
+        }
+    }
+
+    @Override
+    public void onBarcodeFound(List<String> identifier) {
+        super.onBarcodeFound(identifier);
+
+        clearInputs();
+        enableInputs(budBreakForm);
+
+        textVineBudBreakStart.setOnClickListener(this);
+        textCaneBudBreakStart.setOnClickListener(this);
+        textCaneBudBreakFinish.setOnClickListener(this);
+        textVineFloweringStart.setOnClickListener(this);
+        textCaneFloweringStart.setOnClickListener(this);
+        textCaneFloweringFinish.setOnClickListener(this);
+
+        populateDataFields(loadCaneObservationsById(identifier.get(0)));
+
+    }
+
     @Override
     public void onClick(View view){
         debugUtil.logMessage(TAG, "View clicked (" + view.getTag().toString() + ")", run_environment);
 
-        DialogFragment datePicker = new DateSelectionDialog(view);
-        datePicker.show(getActivity().getFragmentManager(), "datePicker");
-        
-    }
+        DateSelectionDialog datePicker = new DateSelectionDialog();
 
-    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View view){
-
-            String user = getUser();
-            debugUtil.logMessage(TAG, "User (" + user + ") wants to save data", run_environment);
+        String currentDate = ((TextView) view).getText().toString();
+        if (currentDate != null) {
+            Bundle args = new Bundle();
+            args.putString(getString(R.string.START_DATE), ((TextView) view).getText().toString());
+            datePicker.setArguments(args);
         }
-    };
+
+        datePicker.setActivatorView(view);
+        datePicker.show(getActivity().getFragmentManager(), "datePicker");
+
+    }
 }

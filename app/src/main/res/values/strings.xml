@@ -4,5 +4,6 @@
     <string name="env">env</string> 
     <string name="api">api_url</string>
     <string name="pref_file">echo.rootstockapp.PREFERENCE_FILE</string>
-    <string name="placeholder_date"></string>
+    <string name="MENU_STATE">lockMenu</string>
+    <string name="START_DATE">start_date</string>
 </resources>

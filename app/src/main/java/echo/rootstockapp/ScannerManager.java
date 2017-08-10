@@ -1,6 +1,7 @@
 package echo.rootstockapp;
 
 import android.content.Context;
+
 import com.honeywell.aidc.AidcManager;
 import com.honeywell.aidc.AidcManager.CreatedCallback;
 import com.honeywell.aidc.BarcodeFailureEvent;
@@ -9,7 +10,6 @@ import com.honeywell.aidc.BarcodeReader;
 import com.honeywell.aidc.BarcodeReader.BarcodeListener;
 import com.honeywell.aidc.ScannerUnavailableException;
 
-import echo.rootstockapp.ScannerManager.BarcodeFoundListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,28 +25,22 @@ public class ScannerManager {
 
     private BarcodeFoundListener barcodeListner;
 
-    public interface BarcodeFoundListener {
-        public void onBarcodeFound(String barcode);
-    }
-
-
-
     public ScannerManager(Context context, BarcodeFoundListener l) {
         debugUtil = new DebugUtil();
         run_environment = context.getSharedPreferences(context.getString(R.string.pref_file),Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
-        barcodeListner = (BarcodeFoundListener) l;
+        barcodeListner = l;
 
         AidcManager.create(context, new CreatedCallback() {
             @Override
             public void onCreated(AidcManager am){
-                             
+
                 aidcManager = am;
 
-                barcodeReader = aidcManager.createBarcodeReader();  
-               
+                barcodeReader = aidcManager.createBarcodeReader();
+
                 if(barcodeReader!=null){
                     try{
-                    
+
                         barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
                                                     BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
                         //barcodeReader.setProperty(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
@@ -73,7 +67,7 @@ public class ScannerManager {
                 } else {
                     debugUtil.logMessage(TAG,"Could not create Barcode Reader object", DebugUtil.LOG_LEVEL_ERROR, run_environment);
                 }
-                      
+
             }
         });
     }
@@ -110,7 +104,7 @@ public class ScannerManager {
             }
         });
     }
-    
+
     public void onDestroy(){
         if(barcodeReader != null){
             barcodeReader.release();
@@ -119,6 +113,11 @@ public class ScannerManager {
         if(aidcManager != null){
             aidcManager.close();
         }
+    }
+
+
+    public interface BarcodeFoundListener {
+        void onBarcodeFound(String barcode);
     }
     
 }

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/form_header"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -21,8 +20,7 @@
         android:layout_alignParentStart="false"
         android:layout_alignParentTop="false"
         android:background="@color/colorSecondary"
-        android:visibility="gone"
-        app:srcCompat="@color/colorSecondary" />
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/row_barcode"

@@ -3,5 +3,6 @@
     <string name="API_username">User</string>
     <string name="API_password">password</string>
     <string name="run_environment">DEV</string>
+    <string name="authorization_key">"ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d"</string>
     <integer name="PIN">1234</integer>
 </resources>

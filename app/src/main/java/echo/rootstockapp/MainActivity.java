@@ -1,23 +1,22 @@
 package echo.rootstockapp;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.List;
 
 import echo.rootstockapp.dialogs.LoadDataDialog;
@@ -27,19 +26,15 @@ import echo.rootstockapp.forms.CaneInfoFragment;
 
 
 /*
- * Entry point for the application, has a basic set of text views to hold info pulled from db.
- * Constructs and configures a scanner object for various barcode types.
+ * Entry point for the application, displays the app login fragment on startup,
+ * Loads config from file
  */
 
-public class MainActivity extends AppCompatActivity implements AppLoginFragment.OnLoginVerifyListener, LoadDataDialog.OnIdentifierDataReceivedListener, ScannerManager.BarcodeFoundListener {
+public class MainActivity extends Activity implements ScannerManager.BarcodeFoundListener {
     
     private final String TAG = MainActivity.class.getSimpleName();
 
-    public static String AUTHORIZATION_KEY ="ApiKey handheld:k7anf9hqphs0zjunodtlfgg3kozbt8lstufdsp2r257edvjr2d";
-    
     private String API_URL;
-    private String API_username;
-    private String API_pw;
     private String run_environment;
 
     private int formIndex = -1;
@@ -49,29 +44,19 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     private ScannerManager scannerManager;
 
     private DbHelper databaseHelper;
-    private Button buttonSave;
-
-    private boolean dataEdit = false;
-    private boolean lockMenu = true;
 
     private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setTitle(R.string.app_name); 
-        getSupportActionBar().setElevation(0f);
+        getActionBar().setTitle(R.string.app_name);
+        getActionBar().setElevation(0f);
         
         if(!loadConfig()){
             Toast.makeText(this,"Could not load config, exiting.", Toast.LENGTH_LONG).show();
             finish();
         }  
-
-        // If this is the first time running the app, load the PIN lock fragment
-        if(savedInstanceState == null){
-            loadFragment(new AppLoginFragment());
-            invalidateOptionsMenu();            
-        }
 
         scannerManager = new ScannerManager(getApplicationContext(), this);
         databaseHelper = new DbHelper(getApplicationContext());
@@ -84,14 +69,14 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.INTERNET}, 101); //Any number
-        }        
+        }
+
+        showFormSelectionDialog();
     }
 
     private boolean loadConfig(){
         try {
             API_URL = getResources().getString(R.string.API_URL);
-            API_username = getResources().getString(R.string.API_username);
-            API_pw = getResources().getString(R.string.API_password);
             run_environment = getResources().getString(R.string.run_environment);
 
             SharedPreferences.Editor prefEditor = getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE).edit();
@@ -103,15 +88,15 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             return false;
         }
 
-        debugUtil.logMessage(TAG, "configuration loaded: URL <" +
-            API_URL + "> User <" + API_username + "> PW <" + API_pw + "> ENV <" + run_environment + ">", run_environment);
+        debugUtil.logMessage(TAG, "configuration loaded: API URL = <" +
+                API_URL + ">, run environment = <" + run_environment + ">", run_environment);
         
         return true;
     }
 
     private void loadFragment(Fragment f){
         currentFragment = f;
-        getSupportFragmentManager().beginTransaction().replace(android.R.id.content, currentFragment).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, currentFragment).commit();
     }
 
     public void changeForm(){
@@ -125,17 +110,17 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             debugUtil.logMessage(TAG,"User wants to load: <" + formName + ">", run_environment);
             switch(formName){
                 case "Cane info":
-                    getSupportActionBar().setTitle(formName);
+                    getActionBar().setTitle(formName);
                     loadFragment(new CaneInfoFragment());
                     fragmentID = 0;
                     break;
                 case "Bud break / Flowering":
                     loadFragment(new BudBreakFragment());
-                    getSupportActionBar().setTitle(formName);
+                    getActionBar().setTitle(formName);
                     fragmentID = 1;
                     break;
                 default:
-                    getSupportActionBar().setTitle("No Form");
+                    getActionBar().setTitle("No Form");
                     setContentView(R.layout.activity_main);
                     break;
             }
@@ -181,8 +166,6 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
 
     @Override
     public void onBarcodeFound(final String barcode){
-        // App should not do anything if in the boot up lock screen
-        if(lockMenu) return;
 
         debugUtil.logMessage(TAG, "Looking up barcode: <" + barcode + ">", run_environment);
         List<String> identifier =  databaseHelper.lookupIdentifier(barcode);
@@ -210,38 +193,30 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     }
 
     @Override
-    public void onLoginVerify(boolean verified){
-        lockMenu = !verified;
-        if(verified){           
-            // Load blank content so PIN screen is not shown again
-            setContentView(R.layout.activity_main);
-            showFormSelectionDialog();
-            invalidateOptionsMenu();
-        }
-    }
+    protected void onSaveInstanceState(Bundle outState) {
+        debugUtil.logMessage(TAG, "saving state", run_environment);
 
-    @Override
-    public boolean writeIdentifierData(File f){
-        debugUtil.logMessage(TAG, "user wants to write local db", run_environment);
-        if(databaseHelper.insertIdentifiers(f)){
-            return true;
-        }
-
-        return false;
+        super.onSaveInstanceState(outState);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater i = getMenuInflater();
         i.inflate(R.menu.menu, menu);
-        if(lockMenu){
-            // Disable menu items that should not be accessible,
-            // eg. PFR login
-            menu.findItem(R.id.menu_load_identifiers).setEnabled(false);
-            menu.findItem(R.id.menu_authenticate).setEnabled(false);
-            menu.findItem(R.id.menu_change_form).setEnabled(false);
-            menu.findItem(R.id.menu_load_observations).setEnabled(false);
+
+        debugUtil.logMessage(TAG, "run_environment == (" + run_environment + ")", run_environment);
+
+        // only want to show this option if in development mode
+        if (run_environment != null) {
+            switch (run_environment) {
+                case "DEV":
+                    menu.findItem(R.id.menu_clear_db).setVisible(true);
+                    break;
+                default:
+                    menu.findItem(R.id.menu_clear_db).setVisible(false);
+            }
         }
+
         return true;
     }
 
@@ -251,18 +226,31 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
             case R.id.menu_authenticate:
                 debugUtil.logMessage(TAG,"User wants to authenticate", run_environment);
                 NetworkLoginDialog n = new NetworkLoginDialog();
-                n.show(getSupportFragmentManager(), "PFR_ Login");
+                n.show(getFragmentManager(), "PFR_ Login");
                 return true;
             case R.id.menu_load_identifiers:
                 LoadDataDialog d = LoadDataDialog.newInstance(LoadDataDialog.ACTIONS.IDENTIFIERS, "Load identifiers");
-                d.show(getSupportFragmentManager(), "Load identifiers");
+                d.show(getFragmentManager(), "Load identifiers");
                 return true;
             case R.id.menu_change_form:
                 showFormSelectionDialog();
                 return true;
             case R.id.menu_load_observations:
                 LoadDataDialog o = LoadDataDialog.newInstance(LoadDataDialog.ACTIONS.OBSERVATIONS, "Load observations");
-                o.show(getSupportFragmentManager(), "Load observations");
+                o.show(getFragmentManager(), "Load observations");
+
+                return true;
+            case R.id.menu_clear_db:
+                SQLiteDatabase db = databaseHelper.getWritableDatabase();
+                try {
+                    db.beginTransaction();
+                    db.execSQL("DELETE FROM " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
+                    db.setTransactionSuccessful();
+                } catch (Exception e) {
+                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                } finally {
+                    db.endTransaction();
+                }
                 return true;
         }
 
@@ -270,13 +258,15 @@ public class MainActivity extends AppCompatActivity implements AppLoginFragment.
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu){
-        // re-enable menu options once the app has been 'unlocked' via PIN
-        menu.findItem(R.id.menu_authenticate).setEnabled(!lockMenu);
-        menu.findItem(R.id.menu_load_identifiers).setEnabled(!lockMenu);
-        menu.findItem(R.id.menu_change_form).setEnabled(!lockMenu);
-        menu.findItem(R.id.menu_load_observations).setEnabled(!lockMenu);
-        return true;
+    protected void onStop() {
+        super.onStop();
+        scannerManager.onDestroy();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        scannerManager = new ScannerManager(getApplicationContext(), this);
     }
 
     @Override

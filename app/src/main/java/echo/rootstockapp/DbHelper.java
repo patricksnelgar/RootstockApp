@@ -5,43 +5,36 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
-import echo.rootstockapp.DbContract.*;
-import echo.rootstockapp.DbContract.IdentifierColumnNames;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.LineNumberReader;
 import java.io.FileReader;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import echo.rootstockapp.DbContract.DbCaneIdentifiers;
+import echo.rootstockapp.DbContract.DbComponentIdentifiers;
+import echo.rootstockapp.DbContract.DbObservations;
+import echo.rootstockapp.DbContract.IdentifierColumnNames;
+
 public class DbHelper extends SQLiteOpenHelper {
 
-    private final String TAG = DbHelper.class.getSimpleName();
-
-    private static final int DATABASE_VERSION = 11;
     public static final String DATABASAE_NAME = "HandHeld.db";
-
+    private static final int DATABASE_VERSION = 11;
+    private final String TAG = DbHelper.class.getSimpleName();
     private String run_environment;
     private DebugUtil debugUtil;
     private boolean dataEdit = false;
 
     private DbProgressListener dbProgressListener;
 
-    public interface DbProgressListener {
-        public void updateProgress(int progress, int total);
-        public void setProgressText(String message);
-        public void setResponseTextPositive(String message);
-        public void setResponseTextNegative(String message);
-    }    
-
     public DbHelper(Context context, DbProgressListener l) {
         super(context, DATABASAE_NAME, null, DATABASE_VERSION);
         run_environment = context.getSharedPreferences(context.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
         debugUtil = new DebugUtil();
-        dbProgressListener = (DbProgressListener) l;
+        dbProgressListener = l;
     }
 
     public DbHelper(Context context) {
@@ -51,7 +44,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void insertIdentifiers(final File f){
-       
+
         dbProgressListener.setProgressText("Writing to DB:");
         final SQLiteDatabase db = this.getWritableDatabase();
 
@@ -63,7 +56,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     BufferedReader br = new BufferedReader(new FileReader(f));
                     String[] headers = br.readLine().split(",");
                     debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
-                   
+
                     db.beginTransaction();
 
                     ContentValues _v = new ContentValues();
@@ -78,7 +71,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         line = br.readLine();
                         if(line == null) break;
                         String[] input = line.split(",",-1);
-                        
+
                         _v.put(IdentifierColumnNames._ID, input[0]);
                         _v.put(IdentifierColumnNames.BARCODE_TITLE, input[1]);
                         _v.put(IdentifierColumnNames.TYPE_TITLE, input[2]);
@@ -88,7 +81,7 @@ public class DbHelper extends SQLiteOpenHelper {
                         _v.put(IdentifierColumnNames.CULTIVAR_TITLE, input[6]);
                         _v.put(IdentifierColumnNames.GRAFT_YEAR_TITLE, input[7]);
 
-                   
+
 
                         switch (input[2]){
                             case "cane":
@@ -96,11 +89,11 @@ public class DbHelper extends SQLiteOpenHelper {
                                 if(rowID!=-1) count++;
                                 break;
                             case "component":
-                                rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v); 
+                                rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v);
                                 if(rowID!=-1) count++;
                                 break;
                         }
-                        dbProgressListener.updateProgress(count, maxCount);          
+                        dbProgressListener.updateProgress(count, maxCount);
                     }
                     db.setTransactionSuccessful();
                     long endTime = System.currentTimeMillis();
@@ -128,9 +121,53 @@ public class DbHelper extends SQLiteOpenHelper {
             @Override
             public void run() {
                 try{
+                    int maxCount = getNumLinesInFile(file);
+                    BufferedReader br = new BufferedReader(new FileReader(file));
+                    String[] headers = br.readLine().split(",");
+                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
 
+                    db.beginTransaction();
+
+                    ContentValues _v = new ContentValues();
+
+                    long startTime = System.currentTimeMillis();
+
+                    int count = 0;
+                    long rowID;
+                    String line;
+
+                    while (true) {
+                        line = br.readLine();
+                        if (line == null) break;
+                        String[] input = line.split(",");
+                        debugUtil.logMessage(TAG, "Line is <" + Arrays.toString(input) + ">", run_environment);
+
+                        _v.put(DbObservations.OBSERVATIONS_VINE_SITE_TITLE, input[0]);
+                        _v.put(DbObservations.OBSERVATIONS_COMPONENT_ID_TITLE, input[2]);
+                        _v.put(DbObservations.OBSERVATIONS_CANE_ID_TITLE, input[4]);
+                        _v.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, input[6]);
+                        _v.put(DbObservations.OBSERVATIONS_VALUE_TITLE, input[8]);
+                        _v.put(DbObservations.OBSERVATIONS_CHANGED_TITLE, false);
+
+
+                        // This will NOT handle checking for an already existing observation against the same measure ID and cane / component ID
+                        rowID = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, _v);
+                        if (rowID != -1) count++;
+
+                        dbProgressListener.updateProgress(count, maxCount);
+                    }
+                    db.setTransactionSuccessful();
+                    long endTime = System.currentTimeMillis();
+                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", run_environment);
+                    if (count != maxCount - 1) {
+                        dbProgressListener.setResponseTextNegative("Failed to insert all records");
+                    } else {
+                        dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
+                    }
                 } catch (Exception e){
                     debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                } finally {
+                    db.endTransaction();
                 }
             }
         }).start();
@@ -138,7 +175,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public List<String> lookupIdentifier(String barcode){
         SQLiteDatabase db = this.getReadableDatabase();
-        
+
         String[] columns = {
             IdentifierColumnNames._ID,
             IdentifierColumnNames.BARCODE_TITLE,
@@ -157,7 +194,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Cursor c;
         c = lookupCane(db, columns, columnFilter, columnValues);
         if(c == null) c = lookupComponent(db, columns, columnFilter, columnValues);
-        
+
         if(c != null){
             try {
                 c.moveToNext();
@@ -165,112 +202,55 @@ public class DbHelper extends SQLiteOpenHelper {
             } catch (Exception e){
                 debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
             }
-        } 
+        }
 
         debugUtil.logMessage(TAG, "Failed to find barcode <" + barcode + "> in DB", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        db.close();
         return null;
-
-
-        /*
-        columns = new String[]{
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
-            DbObservations.OBSERVATIONS_VALUE_TITLE
-        };
-
-        columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
-        columnValues = new String[]{c.getString(c.getColumnIndexOrThrow(DbIdentifiers._ID))};
-
-        final Cursor cur = db.query(
-            DbObservations.OBSERVATIONS_TABLE_NAME,
-            columns,
-            columnFilter,
-            columnValues,
-            null,
-            null,
-            null
-        );
-
-        if(cur.getCount() > 0){
-            dataEdit = true;
-            debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
-            final MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
-            final MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
-            final String caneLengthId = caneLengthText.getMeasurementId();
-            final String caneDiameterId = caneDiameterText.getMeasurementId();
-            
-            
-
-            for(int i = 0; i < cur.getCount(); i++){
-                cur.moveToNext();
-                String measureId = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
-                final String measureValue = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
-
-                if(measureId.equals(caneLengthId)){ 
-                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> length ID <" + caneLengthId +
-                            "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, run_environment);
-                    runOnUiThread(new Runnable(){
-                        @Override
-                        public void run(){
-                            caneLengthText.setText(measureValue);
-                        }
-                    });                    
-                }else if(measureId.equals(caneDiameterId)){
-                    debugUtil.logMessage(TAG, "Index: " + i + " ID <" + measureId + "> diameter ID <" + caneDiameterId +
-                        "> = " + measureValue, DebugUtil.LOG_LEVEL_INFO, run_environment);
-                    runOnUiThread(new Runnable(){
-                        @Override
-                        public void run(){
-                            caneDiameterText.setText(measureValue);
-                        }
-                    });                    
-                }
-                
-            }         
-        } else {
-            dataEdit = false;
-        }
-        */
     }
 
-    public List<String> lookupObservationsForBarcode(String barcode){
-        
-        SQLiteDatabase db = this.getReadableDatabase();
+    public List<String[]> getCaneObservationById(String _ID) {
 
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<String[]> observations = new ArrayList<>();
         String[] columns = new String[]{
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
-            DbObservations.OBSERVATIONS_VALUE_TITLE
+                DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
+                DbObservations.OBSERVATIONS_VALUE_TITLE
         };
 
         String columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
-        String[] columnValues = new String[]{ barcode };
+        String[] columnValues = new String[]{_ID};
 
         final Cursor cur = db.query(
-            DbObservations.OBSERVATIONS_TABLE_NAME,
-            columns,
-            columnFilter,
-            columnValues,
-            null,
-            null,
-            null
+                DbObservations.OBSERVATIONS_TABLE_NAME,
+                columns,
+                columnFilter,
+                columnValues,
+                null,
+                null,
+                null
         );
 
         if(cur.getCount() > 0){
-            dataEdit = true;
             debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
 
             for(int i = 0; i < cur.getCount(); i++){
                 cur.moveToNext();
-                String measureId = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
-                final String measureValue = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
+                String[] _data = new String[2];
+                _data[0] = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
+                _data[1] = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
+                observations.add(_data);
+                debugUtil.logMessage(TAG, "Observation loaded: id (" + _data[0] + ") value (" + _data[1] + ")", run_environment);
+            }
 
-                debugUtil.logMessage(TAG, "Observation loaded: id (" + measureId + ") value (" + measureValue + ")", run_environment)                ;
-            }         
+            db.close();
+            return observations;
         } else {
-            dataEdit = false;
-            debugUtil.logMessage(TAG, "No observatiosn found for ID (" + barcode + ")", run_environment);
+            debugUtil.logMessage(TAG, "No observatiosn found for ID (" + _ID + ")", run_environment);
+            db.close();
+            return null;
         }
 
-        return null;
     }
 
     private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values){
@@ -282,7 +262,7 @@ public class DbHelper extends SQLiteOpenHelper {
             null,
             null,
             null);
-        
+
         debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", run_environment);
         if(_t.getCount() == 1) return _t;
         else return null;
@@ -297,7 +277,7 @@ public class DbHelper extends SQLiteOpenHelper {
             null,
             null,
             null);
-        
+
         debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", run_environment);
         if(_t.getCount() == 1) return _t;
         else return null;
@@ -307,16 +287,16 @@ public class DbHelper extends SQLiteOpenHelper {
         List<String> _l = new ArrayList<String>();
         for(int index = 0; index < _c.getColumnCount(); index++)
             _l.add(_c.getString(index));
-        
+
         return _l;
     }
 
     public boolean saveCaneData(List<String> data){
 
         SQLiteDatabase db = this.getWritableDatabase();
-        
+
         debugUtil.logMessage(TAG, "User wants to save data: (" + data.toString() + ")", run_environment);
-        
+
         return false;
     }
 
@@ -328,6 +308,8 @@ public class DbHelper extends SQLiteOpenHelper {
         } catch (Exception fe){
             debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, run_environment);
         }
+
+        return -1;
     }
 
     /*
@@ -343,7 +325,7 @@ public class DbHelper extends SQLiteOpenHelper {
         String caneDiameterMeasurement = caneDiameterText.getText().toString();
         String caneLengthMeasurement = caneLengthText.getText().toString();
         String caneId = ((TextView) findViewById(R.id.id)).getText().toString();
-        
+
         Date date = new Date();
 
         String metaData = "{'Date':'" + DateFormat.format("dd/mm/yyyy",date) + "','Time':'" + DateFormat.format("hh:mm",date) + "','User':'Garfield'}";
@@ -352,14 +334,14 @@ public class DbHelper extends SQLiteOpenHelper {
 
         if(dataEdit){
             debugUtil.logMessage(TAG,"Updating values for cane " + caneId, run_environment);
-            String queryLength = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
+            String queryLength = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE +
             " = " + caneLengthMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
+            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
             DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneLengthMeasurementId;
 
-            String queryDiameter = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE + 
+            String queryDiameter = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE +
             " = " + caneDiameterMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " + 
+            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
             DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneDiameterMeasurementId;
 
             try{
@@ -416,7 +398,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     src.close();
                     dst.close();
                 }
-            } 
+            }
         } catch (Exception e){
             debugUtil.logMessage(TAG, "Error copying Db: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
         }
@@ -441,7 +423,7 @@ public class DbHelper extends SQLiteOpenHelper {
         final String cultivar = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_CULTIVAR_TITLE));
         //final String graftYear = c.getString(c.getColumnIndexOrThrow(DbIdentifiers.IDENTIFIERS_GRAFT_YEAR_TITLE));
 
-       
+
         runOnUiThread(new Runnable() {
             @Override
             public void run(){
@@ -457,9 +439,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 //textGraftYear.setText(graftYear);
             }
         });
-        
+
     }
-    
+
     */
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -470,7 +452,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        debugUtil.logMessage(TAG, "Upgrading DB", run_environment);        
+        debugUtil.logMessage(TAG, "Upgrading DB", run_environment);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbCaneIdentifiers.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
@@ -484,5 +466,15 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
         onCreate(db);
+    }
+
+    public interface DbProgressListener {
+        void updateProgress(int progress, int total);
+
+        void setProgressText(String message);
+
+        void setResponseTextPositive(String message);
+
+        void setResponseTextNegative(String message);
     }
 }

@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:theme="@style/AppTheme.NoActionBar">
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
+
         <android.support.design.widget.TextInputLayout
             android:id="@+id/textPinHolder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true">
+            android:layout_centerHorizontal="true"
+            app:hintTextAppearance="@android:style/TextAppearance.Medium">
 
             <RelativeLayout
                 android:id="@+id/pinInput"
@@ -19,49 +23,40 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true">
 
-                <ImageView
-                    android:id="@+id/iconLockState"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="16dp"
-                    android:src="@drawable/ic_lock_black_24dp"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"/>
 
                 <EditText
                     android:id="@+id/pin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@+id/iconLockState"
                     android:cursorVisible="true"
                     android:ems="10"
                     android:hint="Pin"
                     android:inputType="numberPassword"
                     android:maxLength="4"
                     android:maxLines="1"
-                    android:selectAllOnFocus="true"
-                    android:nextFocusDown="@+id/username"/>
+                    android:nextFocusDown="@+id/username"
+                    android:selectAllOnFocus="true" />
+
+                <TextView
+                    android:id="@+id/textPinMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/pin"
+                    android:layout_marginLeft="4dp"
+                    android:text="Invalid Pin"
+                    android:visibility="invisible" />
+
             </RelativeLayout>
-            <TextView
-                android:id="@+id/textPinMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Invalid pin"
-                android:visibility="invisible"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:layout_marginLeft="44dp"
-                />
 
         </android.support.design.widget.TextInputLayout>
+
         <android.support.design.widget.TextInputLayout
             android:id="@+id/textUsernameHolder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/textPinHolder"
-            android:layout_alignEnd="@+id/textPinHolder">
+            app:hintTextAppearance="@android:style/TextAppearance.Medium">
+
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -70,26 +65,28 @@
                     android:id="@+id/username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     android:ems="10"
                     android:hint="Username"
-                    android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     android:inputType="text"
                     android:maxLines="1" />
+
                 <TextView
                     android:id="@+id/textUsernameMessage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Username cannot be blank"
-                    android:visibility="invisible"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
                     android:layout_alignStart="@+id/username"
                     android:layout_below="@+id/username"
                     android:layout_marginLeft="4dp"
-                    />
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:text="Username cannot be blank"
+                    android:visibility="invisible" />
+
             </RelativeLayout>
 
         </android.support.design.widget.TextInputLayout>
+
         <Button
             android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
@@ -99,6 +96,7 @@
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:text="Submit" />
+
     </RelativeLayout>
 
 </RelativeLayout>
