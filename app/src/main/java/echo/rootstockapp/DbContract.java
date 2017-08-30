@@ -25,15 +25,16 @@ public final class DbContract {
         static final String FPI_TITLE = IdentifierColumnNames.FPI_TITLE;
         static final String CULTIVAR_TITLE = IdentifierColumnNames.CULTIVAR_TITLE;
         static final String GRAFT_YEAR_TITLE = IdentifierColumnNames.GRAFT_YEAR_TITLE;
-        static final String SQL_CREATE_TABLE = "Create table " + DbComponentIdentifiers.TABLE_NAME +
-            " (" + DbComponentIdentifiers._ID + " Integer Primary Key," +
-            DbComponentIdentifiers.BARCODE_TITLE + " Text," +
-            DbComponentIdentifiers.TYPE_TITLE + " Text," +
-            DbComponentIdentifiers.SITE_TITLE + " Text," +
-            DbComponentIdentifiers.BLOCK_TITLE + " Text," +
-            DbComponentIdentifiers.FPI_TITLE + " Text," +
-            DbComponentIdentifiers.CULTIVAR_TITLE + " Text," +
-            DbComponentIdentifiers.GRAFT_YEAR_TITLE + " Text)";
+
+        static final String SQL_CREATE_TABLE = "Create table " + TABLE_NAME +
+                " (" + _ID + " Integer Primary Key," +
+                BARCODE_TITLE + " Text," +
+                TYPE_TITLE + " Text," +
+                SITE_TITLE + " Text," +
+                BLOCK_TITLE + " Text," +
+                FPI_TITLE + " Text," +
+                CULTIVAR_TITLE + " Text," +
+                GRAFT_YEAR_TITLE + " Text)";
     }
 
     static class DbCaneIdentifiers implements BaseColumns {
@@ -45,15 +46,16 @@ public final class DbContract {
         static final String FPI_TITLE = IdentifierColumnNames.FPI_TITLE;
         static final String CULTIVAR_TITLE = IdentifierColumnNames.CULTIVAR_TITLE;
         static final String GRAFT_YEAR_TITLE = IdentifierColumnNames.GRAFT_YEAR_TITLE;
-        static final String SQL_CREATE_TABLE = "Create table " + DbCaneIdentifiers.TABLE_NAME +
-            " (" + DbCaneIdentifiers._ID + " Integer Primary Key," +
-            DbCaneIdentifiers.BARCODE_TITLE + " Text," +
-            DbCaneIdentifiers.TYPE_TITLE + " Text," +
-            DbCaneIdentifiers.SITE_TITLE + " Text," +
-            DbCaneIdentifiers.BLOCK_TITLE + " Text," +
-            DbCaneIdentifiers.FPI_TITLE + " Text," +
-            DbCaneIdentifiers.CULTIVAR_TITLE + " Text," +
-            DbCaneIdentifiers.GRAFT_YEAR_TITLE + " Text)";
+
+        static final String SQL_CREATE_TABLE = "Create table " + TABLE_NAME +
+                " (" + _ID + " Integer Primary Key," +
+                BARCODE_TITLE + " Text," +
+                TYPE_TITLE + " Text," +
+                SITE_TITLE + " Text," +
+                BLOCK_TITLE + " Text," +
+                FPI_TITLE + " Text," +
+                CULTIVAR_TITLE + " Text," +
+                GRAFT_YEAR_TITLE + " Text)";
     }
 
     static class DbObservations implements BaseColumns {
@@ -65,14 +67,16 @@ public final class DbContract {
         static final String OBSERVATIONS_VALUE_TITLE = "value";
         static final String OBSERVATIONS_METADATA_TITLE = "metadata";
         static final String OBSERVATIONS_CHANGED_TITLE = "changed";
-        static final String SQL_CREATE_OBSERVATIONS = "Create table " + DbObservations.OBSERVATIONS_TABLE_NAME +
-                " (" + DbObservations._ID + " Integer Primary Key," +
-        DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + " Text," +
-        DbObservations.OBSERVATIONS_COMPONENT_ID_TITLE + " Text," +
-        DbObservations.OBSERVATIONS_CANE_ID_TITLE + " Text," +
-        DbObservations.OBSERVATIONS_VALUE_TITLE + " Text," +
-                DbObservations.OBSERVATIONS_METADATA_TITLE + " Text," +
-        DbObservations.OBSERVATIONS_CHANGED_TITLE + " Boolean)";
+
+        static final String SQL_CREATE_OBSERVATIONS = "Create table " + OBSERVATIONS_TABLE_NAME +
+                " (" + _ID + " Integer Primary Key," +
+                OBSERVATIONS_VINE_SITE_TITLE + " Text," +
+                OBSERVATIONS_MEASUREMENT_ID_TITLE + " Text," +
+                OBSERVATIONS_COMPONENT_ID_TITLE + " Text," +
+                OBSERVATIONS_CANE_ID_TITLE + " Text," +
+                OBSERVATIONS_VALUE_TITLE + " Text," +
+                OBSERVATIONS_METADATA_TITLE + " Text," +
+                OBSERVATIONS_CHANGED_TITLE + " Boolean)";
     }
 
     // Fill in the rest of this when functionality is implemented kakapo side

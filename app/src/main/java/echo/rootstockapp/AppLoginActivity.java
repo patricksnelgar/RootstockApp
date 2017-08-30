@@ -22,6 +22,7 @@ public class AppLoginActivity extends Activity {
     private EditText editUsername;
     private boolean validPin = false;
     private boolean validUsername = false;
+
     final View.OnClickListener loginOnClickListener = new View.OnClickListener() {
 
         @Override
@@ -68,9 +69,10 @@ public class AppLoginActivity extends Activity {
                 SharedPreferences prefs = getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString(getString(R.string.username), editUsername.getText().toString());
-                editor.commit();
+                editor.apply();
 
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
             }
         }
     };

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:theme="@style/RootstockTheme">
 
     <include
         android:id="@+id/include_header"
         layout="@layout/form_header_layout" />
+
 
     <RelativeLayout
         android:id="@+id/form_cane_details"
@@ -15,13 +15,14 @@
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/include_header"
-        android:background="@color/colorFormDisabledBackground">
+        android:paddingTop="8dp">
 
         <RelativeLayout
             android:id="@+id/cane_length_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingRight="4dp">
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp">
 
             <TextView
                 android:id="@+id/text_cm"
@@ -36,21 +37,17 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                custom:hintTextAppearance="@android:style/TextAppearance.Medium">
+                android:theme="@style/RootstockTheme.TextInputLayout">
 
-                <echo.rootstockapp.MeasurementText
+                <echo.rootstockapp.views.MeasurementText
                     android:id="@+id/cane_length"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
-                    android:hint="Cane length"
-                    android:inputType="number|numberDecimal"
-                    android:maxLength="20"
-                    android:maxLines="1"
-                    android:nextFocusDown="@+id/cane_diameter"
-                    custom:measurement_id="1" />
-
+                    android:hint="Cane length" />
             </android.support.design.widget.TextInputLayout>
+
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -58,7 +55,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/cane_length_holder"
-            android:paddingRight="4dp">
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp">
 
             <TextView
                 android:id="@+id/text_mm"
@@ -73,20 +71,17 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                custom:hintTextAppearance="@android:style/TextAppearance.Medium">
+                android:theme="@style/RootstockTheme.TextInputLayout">
 
-                <echo.rootstockapp.MeasurementText
+                <echo.rootstockapp.views.MeasurementText
                     android:id="@+id/cane_diameter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:enabled="false"
-                    android:hint="Cane diameter"
-                    android:inputType="number|numberDecimal"
-                    android:maxLength="20"
-                    android:maxLines="1"
-                    android:nextFocusUp="@+id/cane_length"
-                    custom:measurement_id="2" />
+                    android:hint="Cane diameter" />
             </android.support.design.widget.TextInputLayout>
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -96,7 +91,7 @@
             android:layout_below="@+id/cane_diameter_holder"
             android:paddingBottom="8dp"
             android:paddingEnd="4dp"
-            android:paddingStart="5dp"
+            android:paddingStart="4dp"
             android:paddingTop="8dp">
 
             <CheckBox
@@ -113,6 +108,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:paddingStart="4dp"
                 android:text="Cane exists in field?"
                 android:textSize="18sp" />
         </RelativeLayout>
@@ -125,14 +121,6 @@
             android:paddingEnd="4dp"
             android:paddingStart="4dp">
 
-            <TextView
-                android:id="@+id/text_cane_type_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="Cane type"
-                android:textSize="18sp" />
-
             <Spinner
                 android:id="@+id/cane_type"
                 android:layout_width="wrap_content"
@@ -141,9 +129,22 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true" />
 
+            <TextView
+                android:id="@+id/text_cane_type_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/cane_type"
+                android:layout_alignBottom="@+id/cane_type"
+                android:layout_alignParentStart="true"
+                android:enabled="true"
+                android:paddingStart="4dp"
+                android:text="Cane type"
+                android:textSize="18sp" />
+
         </RelativeLayout>
 
     </RelativeLayout>
+
 
     <include
         android:id="@+id/include_footer"

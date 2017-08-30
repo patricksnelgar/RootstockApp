@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+    <style name="RootstockTheme" parent="android:Theme.Material.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -14,7 +14,7 @@
 
     </style>
 
-    <style name="AppTheme.NoActionBar" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="RootstockTheme.NoActionBar" parent="android:Theme.Material.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorSecondary</item>
@@ -25,11 +25,15 @@
         <item name="android:colorAccent">@color/colorSecondary</item>
     </style>
 
-    <style name="DataForms" parent="AppTheme">
+    <style name="RootstockTheme.TextInputLayout" parent="Theme.AppCompat.Light">
+        <item name="textColorError">@color/colorTextError</item>
+    </style>
+
+    <style name="DataForms" parent="RootstockTheme">
         <item name="android:textSize">18sp</item>
     </style>
 
-    <style name="Header" parent="AppTheme">
+    <style name="Header" parent="RootstockTheme">
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:textColor">#fafafa</item>
     </style>

@@ -1,8 +1,5 @@
  <resources>
-    <declare-styleable name="MeasurementText">
+     <declare-styleable name="MeasurementText">
         <attr name="measurement_id" format="integer"/>
-    </declare-styleable>
-    <declare-styleable name="PinInput">
-
     </declare-styleable>
  </resources>

@@ -1,0 +1,11 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "java.externalDependencies": [
+    "com.squareup.okhttp3:okhttp:3.8.1",
+    "com.android.support:appcompat-v7:23.0.0",
+    "com.android.support:design:23.0.0",
+    "com.android.support:support-v4:23.0.0",
+    "com.loopj.android:android-async-http:1.4.9",
+    "cz.msebera.android:httpclient:4.4.1.2"
+  ]
+}

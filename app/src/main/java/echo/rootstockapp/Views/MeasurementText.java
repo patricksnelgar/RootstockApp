@@ -1,25 +1,26 @@
-package echo.rootstockapp;
+package echo.rootstockapp.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
-public class MeasurementText extends EditText {
+import echo.rootstockapp.R;
+
+public class MeasurementText extends android.support.v7.widget.AppCompatEditText {
 
     private String measurementId;
 
-    public MeasurementText (Context context, AttributeSet att){
+    public MeasurementText(Context context, AttributeSet att) {
         super(context, att);
         TypedArray a = context.getTheme().obtainStyledAttributes(att, R.styleable.MeasurementText, 0, 0);
-        try{
+        try {
             measurementId = a.getString(R.styleable.MeasurementText_measurement_id);
         } finally {
             a.recycle();
         }
     }
 
-    public String getMeasurementId(){
+    public String getMeasurementId() {
         return measurementId;
     }
 }

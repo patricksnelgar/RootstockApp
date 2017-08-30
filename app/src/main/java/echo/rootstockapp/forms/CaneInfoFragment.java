@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -18,8 +17,8 @@ import java.util.List;
 
 import echo.rootstockapp.DbHelper;
 import echo.rootstockapp.DebugUtil;
-import echo.rootstockapp.MeasurementText;
 import echo.rootstockapp.R;
+import echo.rootstockapp.views.MeasurementText;
 
 /**
  * Fragment that displays input fields for gathering cane level information
@@ -35,8 +34,8 @@ public class CaneInfoFragment extends BaseFragment {
     private CheckBox observationCaneExists;
     private Spinner observationCaneType;
     private DebugUtil debugUtil;
-    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
 
+    final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View view) {
@@ -50,7 +49,7 @@ public class CaneInfoFragment extends BaseFragment {
             if (user != null) {
                 debugUtil.logMessage(TAG, "User (" + user + ") wants to save data for (" + barcode + ")", run_environment);
 
-                List<String> data = new ArrayList<String>();
+                List<String> data = new ArrayList<>();
                 data.add(barcode);
                 data.add(stringCaneLength);
                 data.add(stringCaneDiameter);
@@ -59,21 +58,19 @@ public class CaneInfoFragment extends BaseFragment {
 
                 DbHelper databaseHelper = new DbHelper(getActivity());
                 databaseHelper.saveCaneData(data);
-                if (databaseHelper != null) databaseHelper.close();
+                databaseHelper.close();
             } else {
                 showToastNotification("Username required to save data");
             }
         }
     };
-    private Button buttonSave;
     private TextView textCm;
     private TextView textMm;
-    private ArrayAdapter<String> adapterCaneType;
-    private List<String> listCaneTypes;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflateFragment(R.layout.cane_details_layout, inflater, container);
+
 
         caneInfoHolder = (RelativeLayout) v.findViewById(R.id.form_cane_details);
 
@@ -85,12 +82,10 @@ public class CaneInfoFragment extends BaseFragment {
         textMm = (TextView) caneInfoHolder.findViewById(R.id.text_mm);
         textCm = (TextView) caneInfoHolder.findViewById(R.id.text_cm);
 
-        buttonSave = (Button) v.findViewById(R.id.button_save);
-
         observationCaneType.setEnabled(false);
 
-        listCaneTypes = Arrays.asList(getActivity().getResources().getStringArray(R.array.cane_type));
-        adapterCaneType = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, listCaneTypes);
+        List<String> listCaneTypes = Arrays.asList(getActivity().getResources().getStringArray(R.array.cane_type));
+        ArrayAdapter<String> adapterCaneType = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, listCaneTypes);
         observationCaneType.setAdapter(adapterCaneType);
         adapterCaneType.notifyDataSetChanged();
 
@@ -102,51 +97,8 @@ public class CaneInfoFragment extends BaseFragment {
         return v;
     }
 
-    private void clearInputs() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                observationCaneLength.setText("");
-                observationCaneDiameter.setText("");
-                observationCaneType.setSelection(0);
-                //observationEarlyOrLate.clearCheck();
-                //reset other entries to default
-            }
-        });
-    }
-
-    private void populateDataFields(final List<String[]> _observations) {
-        if (_observations == null) return;
-
-        for (String[] measurement : _observations) {
-
-            /**
-             * Switch on the measurement _ID
-             *
-             * 1 - BB start date (cane)
-             * 2 - BB Finish date (cane)
-             * 3 - Flower start date (cane)
-             * 4 -
-             * 5 -
-             * 6 - Flower finish date (cane)
-             * 7 - General comment
-             * ?
-             */
-            switch (measurement[0]) {
-
-                case "7":
-                    // Need to implement comment field first
-                    debugUtil.logMessage(TAG, "Comment is (" + measurement[1] + ")", run_environment);
-                    break;
-                default:
-                    debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
-                    break;
-            }
-        }
-    }
-
     @Override
-    public void onBarcodeFound(List<String> identifier){
+    public void onBarcodeFound(List<String> identifier) {
         super.onBarcodeFound(identifier);
 
         // Do stuff for this form type
@@ -169,9 +121,46 @@ public class CaneInfoFragment extends BaseFragment {
         populateDataFields(loadCaneObservationsById(identifier.get(0)));
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
+    private void clearInputs() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                observationCaneLength.setText("");
+                observationCaneDiameter.setText("");
+                observationCaneType.setSelection(0);
+                //observationEarlyOrLate.clearCheck();
+                //reset other entries to default
+            }
+        });
+    }
 
+    private void populateDataFields(final List<String[]> _observations) {
+        if (_observations == null) return;
+
+        for (String[] measurement : _observations) {
+
+            /*
+              Switch on the measurement _ID
+
+              1 - BB start date (cane)
+              2 - BB Finish date (cane)
+              3 - Flower start date (cane)
+              4 -
+              5 -
+              6 - Flower finish date (cane)
+              7 - General comment
+              ?
+            */
+            switch (measurement[0]) {
+
+                case "7":
+                    // Need to implement comment field first
+                    debugUtil.logMessage(TAG, "Comment is (" + measurement[1] + ")", run_environment);
+                    break;
+                default:
+                    debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
+                    break;
+            }
+        }
     }
 }

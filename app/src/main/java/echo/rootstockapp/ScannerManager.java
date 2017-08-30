@@ -13,7 +13,7 @@ import com.honeywell.aidc.ScannerUnavailableException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ScannerManager {
+class ScannerManager {
 
     private final String TAG = ScannerManager.class.getSimpleName();
 
@@ -23,65 +23,59 @@ public class ScannerManager {
     private String run_environment;
     private boolean hasScanner = false;
 
-    private BarcodeFoundListener barcodeListner;
+    private BarcodeFoundListener barcodeFoundListener;
 
-    public ScannerManager(Context context, BarcodeFoundListener l) {
+    ScannerManager(Context context, BarcodeFoundListener l) {
         debugUtil = new DebugUtil();
-        run_environment = context.getSharedPreferences(context.getString(R.string.pref_file),Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
-        barcodeListner = l;
+        run_environment = context.getString(R.string.run_environment);
+        barcodeFoundListener = l;
 
         AidcManager.create(context, new CreatedCallback() {
             @Override
-            public void onCreated(AidcManager am){
+            public void onCreated(AidcManager am) {
 
                 aidcManager = am;
 
                 barcodeReader = aidcManager.createBarcodeReader();
 
-                if(barcodeReader!=null){
-                    try{
+                try {
 
-                        barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
-                                                    BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
-                        //barcodeReader.setProperty(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
+                    barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
+                            BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
 
-                        Map<String,Object> properties = new HashMap<String,Object>();
-                        properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
-                        properties.put(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
-                        properties.put(BarcodeReader.PROPERTY_PDF_417_ENABLED, true);
-                       // properties.put(BarcodeReader.PROPERTY_CENTER_DECODE, true);
-                        properties.put(BarcodeReader.PROPERTY_NOTIFICATION_BAD_READ_ENABLED, true);
+                    Map<String, Object> properties = new HashMap<>();
+                    properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
+                    properties.put(BarcodeReader.PROPERTY_MICRO_PDF_417_ENABLED, true);
+                    properties.put(BarcodeReader.PROPERTY_PDF_417_ENABLED, true);
+                    properties.put(BarcodeReader.PROPERTY_NOTIFICATION_BAD_READ_ENABLED, true);
 
-                        barcodeReader.setProperties(properties);
+                    barcodeReader.setProperties(properties);
 
-                    } catch (Exception e){
-                        debugUtil.logMessage(TAG, "Could not set property: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
-                    }
+                } catch (Exception e) {
+                    debugUtil.logMessage(TAG, "Could not set property: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                }
 
-                    hasScanner = claimScanner();
-                    if(hasScanner){
-                        regsiterBarcodeListener();
-                    } else {
-                        debugUtil.logMessage(TAG,"Could not claim scanner", DebugUtil.LOG_LEVEL_ERROR, run_environment);
-                    }
+                hasScanner = claimScanner();
+                if (hasScanner) {
+                    registerBarcodeListener();
                 } else {
-                    debugUtil.logMessage(TAG,"Could not create Barcode Reader object", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                    debugUtil.logMessage(TAG, "Could not claim scanner", DebugUtil.LOG_LEVEL_ERROR, run_environment);
                 }
 
             }
         });
     }
 
-    private boolean claimScanner(){
-        try{
-            if(barcodeReader != null){
+    private boolean claimScanner() {
+        try {
+            if (barcodeReader != null) {
                 barcodeReader.claim();
-            } else if (barcodeReader == null){
+            } else {
                 debugUtil.logMessage(TAG, "reader is null", run_environment);
                 barcodeReader = aidcManager.createBarcodeReader();
                 barcodeReader.claim();
             }
-        } catch (ScannerUnavailableException se){
+        } catch (ScannerUnavailableException se) {
             debugUtil.logMessage(TAG, "Could not claim scanner.", DebugUtil.LOG_LEVEL_ERROR, run_environment);
             return false;
         }
@@ -89,35 +83,34 @@ public class ScannerManager {
         return true;
     }
 
-    private void regsiterBarcodeListener(){
+    private void registerBarcodeListener() {
 
-        barcodeReader.addBarcodeListener(new BarcodeListener(){
+        barcodeReader.addBarcodeListener(new BarcodeListener() {
 
             @Override
-            public void onBarcodeEvent(BarcodeReadEvent event){
-                debugUtil.logMessage(TAG,"Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, run_environment);
-                barcodeListner.onBarcodeFound(event.getBarcodeData());
+            public void onBarcodeEvent(BarcodeReadEvent event) {
+                debugUtil.logMessage(TAG, "Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, run_environment);
+                barcodeFoundListener.onBarcodeFound(event.getBarcodeData());
             }
 
-            public void onFailureEvent(BarcodeFailureEvent fevent){
+            public void onFailureEvent(BarcodeFailureEvent failureEvent) {
                 debugUtil.logMessage(TAG, "Barcode failure event", DebugUtil.LOG_LEVEL_ERROR, run_environment);
             }
         });
     }
 
-    public void onDestroy(){
-        if(barcodeReader != null){
+    void onDestroy() {
+        if (barcodeReader != null) {
             barcodeReader.release();
         }
 
-        if(aidcManager != null){
+        if (aidcManager != null) {
             aidcManager.close();
         }
     }
 
-
     public interface BarcodeFoundListener {
         void onBarcodeFound(String barcode);
     }
-    
+
 }

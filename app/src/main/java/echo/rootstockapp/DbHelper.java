@@ -21,37 +21,36 @@ import echo.rootstockapp.DbContract.IdentifierColumnNames;
 
 public class DbHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASAE_NAME = "HandHeld.db";
-    private static final int DATABASE_VERSION = 11;
+    private static final String DATABASE_NAME = "HandHeld.db";
+    private static final int DATABASE_VERSION = 13;
     private final String TAG = DbHelper.class.getSimpleName();
     private String run_environment;
     private DebugUtil debugUtil;
-    private boolean dataEdit = false;
 
     private DbProgressListener dbProgressListener;
 
     public DbHelper(Context context, DbProgressListener l) {
-        super(context, DATABASAE_NAME, null, DATABASE_VERSION);
-        run_environment = context.getSharedPreferences(context.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        run_environment = context.getString(R.string.run_environment);
         debugUtil = new DebugUtil();
         dbProgressListener = l;
     }
 
     public DbHelper(Context context) {
-        super(context, DATABASAE_NAME, null, DATABASE_VERSION);
-        run_environment = run_environment = context.getSharedPreferences(context.getString(R.string.pref_file), Context.MODE_PRIVATE).getString(context.getString(R.string.env), null);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        run_environment = context.getString(R.string.run_environment);
         debugUtil = new DebugUtil();
     }
 
-    public void insertIdentifiers(final File f){
+    public void insertIdentifiers(final File f) {
 
         dbProgressListener.setProgressText("Writing to DB:");
         final SQLiteDatabase db = this.getWritableDatabase();
 
-        new Thread(new Runnable(){
+        new Thread(new Runnable() {
             @Override
-            public void run(){
-                try{
+            public void run() {
+                try {
                     int maxCount = getNumLinesInFile(f);
                     BufferedReader br = new BufferedReader(new FileReader(f));
                     String[] headers = br.readLine().split(",");
@@ -67,10 +66,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     long rowID;
                     String line;
 
-                    while(true){
+                    while (true) {
                         line = br.readLine();
-                        if(line == null) break;
-                        String[] input = line.split(",",-1);
+                        if (line == null) break;
+                        String[] input = line.split(",", -1);
 
                         _v.put(IdentifierColumnNames._ID, input[0]);
                         _v.put(IdentifierColumnNames.BARCODE_TITLE, input[1]);
@@ -82,28 +81,27 @@ public class DbHelper extends SQLiteOpenHelper {
                         _v.put(IdentifierColumnNames.GRAFT_YEAR_TITLE, input[7]);
 
 
-
-                        switch (input[2]){
+                        switch (input[2]) {
                             case "cane":
                                 rowID = db.insert(DbCaneIdentifiers.TABLE_NAME, null, _v);
-                                if(rowID!=-1) count++;
+                                if (rowID != -1) count++;
                                 break;
                             case "component":
                                 rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v);
-                                if(rowID!=-1) count++;
+                                if (rowID != -1) count++;
                                 break;
                         }
                         dbProgressListener.updateProgress(count, maxCount);
                     }
                     db.setTransactionSuccessful();
                     long endTime = System.currentTimeMillis();
-                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount-1) +") records: " + (endTime - startTime) + "ms", run_environment);
-                    if(count != maxCount-1){
+                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", run_environment);
+                    if (count != maxCount - 1) {
                         dbProgressListener.setResponseTextNegative("Failed to insert all records");
                     } else {
                         dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
                 } finally {
                     db.endTransaction();
@@ -113,14 +111,26 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
-    public void insertObservations(final File file){
+    private int getNumLinesInFile(final File file) {
+        try {
+            LineNumberReader lr = new LineNumberReader(new FileReader(file));
+            lr.skip(Long.MAX_VALUE);
+            return lr.getLineNumber();
+        } catch (Exception fe) {
+            debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        }
+
+        return -1;
+    }
+
+    public void insertObservations(final File file) {
         dbProgressListener.setProgressText("Inserting observations: ");
         final SQLiteDatabase db = this.getWritableDatabase();
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     int maxCount = getNumLinesInFile(file);
                     BufferedReader br = new BufferedReader(new FileReader(file));
                     String[] headers = br.readLine().split(",");
@@ -164,7 +174,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     } else {
                         dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
                 } finally {
                     db.endTransaction();
@@ -173,18 +183,18 @@ public class DbHelper extends SQLiteOpenHelper {
         }).start();
     }
 
-    public List<String> lookupIdentifier(String barcode){
+    List<String> lookupIdentifier(String barcode) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String[] columns = {
-            IdentifierColumnNames._ID,
-            IdentifierColumnNames.BARCODE_TITLE,
-            IdentifierColumnNames.TYPE_TITLE,
-            IdentifierColumnNames.SITE_TITLE,
-            IdentifierColumnNames.BLOCK_TITLE,
-            IdentifierColumnNames.FPI_TITLE,
-            IdentifierColumnNames.CULTIVAR_TITLE,
-            IdentifierColumnNames.GRAFT_YEAR_TITLE
+                IdentifierColumnNames._ID,
+                IdentifierColumnNames.BARCODE_TITLE,
+                IdentifierColumnNames.TYPE_TITLE,
+                IdentifierColumnNames.SITE_TITLE,
+                IdentifierColumnNames.BLOCK_TITLE,
+                IdentifierColumnNames.FPI_TITLE,
+                IdentifierColumnNames.CULTIVAR_TITLE,
+                IdentifierColumnNames.GRAFT_YEAR_TITLE
 
         };
 
@@ -193,13 +203,13 @@ public class DbHelper extends SQLiteOpenHelper {
 
         Cursor c;
         c = lookupCane(db, columns, columnFilter, columnValues);
-        if(c == null) c = lookupComponent(db, columns, columnFilter, columnValues);
+        if (c == null) c = lookupComponent(db, columns, columnFilter, columnValues);
 
-        if(c != null){
+        if (c != null) {
             try {
                 c.moveToNext();
                 return buildIdentifierReturnObject(c);
-            } catch (Exception e){
+            } catch (Exception e) {
                 debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
             }
         }
@@ -207,6 +217,44 @@ public class DbHelper extends SQLiteOpenHelper {
         debugUtil.logMessage(TAG, "Failed to find barcode <" + barcode + "> in DB", DebugUtil.LOG_LEVEL_ERROR, run_environment);
         db.close();
         return null;
+    }
+
+    private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values) {
+        Cursor _t = database.query(
+                DbContract.DbCaneIdentifiers.TABLE_NAME,
+                columns,
+                filter,
+                values,
+                null,
+                null,
+                null);
+
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", run_environment);
+        if (_t.getCount() == 1) return _t;
+        else return null;
+    }
+
+    private Cursor lookupComponent(SQLiteDatabase database, String[] columns, String filter, String[] values) {
+        Cursor _t = database.query(
+                DbContract.DbComponentIdentifiers.TABLE_NAME,
+                columns,
+                filter,
+                values,
+                null,
+                null,
+                null);
+
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", run_environment);
+        if (_t.getCount() == 1) return _t;
+        else return null;
+    }
+
+    private List<String> buildIdentifierReturnObject(Cursor _c) {
+        List<String> _l = new ArrayList<>();
+        for (int index = 0; index < _c.getColumnCount(); index++)
+            _l.add(_c.getString(index));
+
+        return _l;
     }
 
     public List<String[]> getCaneObservationById(String _ID) {
@@ -231,10 +279,10 @@ public class DbHelper extends SQLiteOpenHelper {
                 null
         );
 
-        if(cur.getCount() > 0){
-            debugUtil.logMessage(TAG,"Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
+        if (cur.getCount() > 0) {
+            debugUtil.logMessage(TAG, "Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
 
-            for(int i = 0; i < cur.getCount(); i++){
+            for (int i = 0; i < cur.getCount(); i++) {
                 cur.moveToNext();
                 String[] _data = new String[2];
                 _data[0] = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
@@ -244,54 +292,18 @@ public class DbHelper extends SQLiteOpenHelper {
             }
 
             db.close();
+            cur.close();
             return observations;
         } else {
             debugUtil.logMessage(TAG, "No observatiosn found for ID (" + _ID + ")", run_environment);
             db.close();
+            cur.close();
             return null;
         }
 
     }
 
-    private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values){
-        Cursor _t = database.query(
-            DbContract.DbCaneIdentifiers.TABLE_NAME,
-            columns,
-            filter,
-            values,
-            null,
-            null,
-            null);
-
-        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", run_environment);
-        if(_t.getCount() == 1) return _t;
-        else return null;
-    }
-
-    private Cursor lookupComponent(SQLiteDatabase database, String[] columns, String filter, String[] values){
-        Cursor _t = database.query(
-            DbContract.DbComponentIdentifiers.TABLE_NAME,
-            columns,
-            filter,
-            values,
-            null,
-            null,
-            null);
-
-        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", run_environment);
-        if(_t.getCount() == 1) return _t;
-        else return null;
-    }
-
-    private List<String> buildIdentifierReturnObject(Cursor _c){
-        List<String> _l = new ArrayList<String>();
-        for(int index = 0; index < _c.getColumnCount(); index++)
-            _l.add(_c.getString(index));
-
-        return _l;
-    }
-
-    public boolean saveCaneData(List<String> data){
+    public boolean saveCaneData(List<String> data) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -300,19 +312,15 @@ public class DbHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    private int getNumLinesInFile(final File file){
-        try {
-            LineNumberReader lr = new LineNumberReader(new FileReader(file));
-            lr.skip(Long.MAX_VALUE);
-            return lr.getLineNumber();
-        } catch (Exception fe){
-            debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, run_environment);
-        }
+    public interface DbProgressListener {
+        void updateProgress(int progress, int total);
 
-        return -1;
-    }
+        void setProgressText(String message);
 
-    /*
+        void setResponseTextPositive(String message);
+
+        void setResponseTextNegative(String message);
+    }    /*
     public void saveData(View v){
        debugUtil.logMessage(TAG, "Is edit? " + dataEdit, run_environment);
 
@@ -468,13 +476,5 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public interface DbProgressListener {
-        void updateProgress(int progress, int total);
 
-        void setProgressText(String message);
-
-        void setResponseTextPositive(String message);
-
-        void setResponseTextNegative(String message);
-    }
 }

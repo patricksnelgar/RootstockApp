@@ -1,5 +1,6 @@
 package echo.rootstockapp.forms;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,7 @@ import echo.rootstockapp.R;
 import echo.rootstockapp.dialogs.DateSelectionDialog;
 
 public class BudBreakFragment extends BaseFragment implements View.OnClickListener {
-    
+
     private final String TAG = BudBreakFragment.class.getSimpleName();
 
     private String run_environment;
@@ -37,17 +38,17 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
     private TextView textCaneFloweringFinish;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflateFragment(R.layout.budbreak_flowering_layout, inflater, container);
 
         budBreakForm = (RelativeLayout) v.findViewById(R.id.form_budbreak_flowering);
 
-        textVineBudBreakStart   = (TextView) v.findViewById(R.id.text_vine_budbreak_start);
-        textCaneBudBreakStart   = (TextView) v.findViewById(R.id.text_cane_budbreak_start);
-        textCaneBudBreakFinish  = (TextView) v.findViewById(R.id.text_cane_budbreak_finish);
-        textVineFloweringStart  = (TextView) v.findViewById(R.id.text_vine_flowering_start);
-        textCaneFloweringStart  = (TextView) v.findViewById(R.id.text_cane_flowering_start);
+        textVineBudBreakStart = (TextView) v.findViewById(R.id.text_vine_budbreak_start);
+        textCaneBudBreakStart = (TextView) v.findViewById(R.id.text_cane_budbreak_start);
+        textCaneBudBreakFinish = (TextView) v.findViewById(R.id.text_cane_budbreak_finish);
+        textVineFloweringStart = (TextView) v.findViewById(R.id.text_vine_flowering_start);
+        textCaneFloweringStart = (TextView) v.findViewById(R.id.text_cane_flowering_start);
         textCaneFloweringFinish = (TextView) v.findViewById(R.id.text_cane_flowering_finish);
 
         run_environment = getRunEnvironment();
@@ -56,6 +57,31 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         registerSaveButton(saveDataOnClickListener);
 
         return v;
+    }
+
+    @Override
+    public void onBarcodeFound(List<String> identifier) {
+        super.onBarcodeFound(identifier);
+
+        clearInputs();
+        enableInputs(budBreakForm);
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                budBreakForm.setBackgroundColor(Color.parseColor("#fafafa"));
+            }
+        });
+
+        textVineBudBreakStart.setOnClickListener(this);
+        textCaneBudBreakStart.setOnClickListener(this);
+        textCaneBudBreakFinish.setOnClickListener(this);
+        textVineFloweringStart.setOnClickListener(this);
+        textCaneFloweringStart.setOnClickListener(this);
+        textCaneFloweringFinish.setOnClickListener(this);
+
+        populateDataFields(loadCaneObservationsById(identifier.get(0)));
+
     }
 
     private void clearInputs() {
@@ -76,18 +102,18 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         if (_observations == null) return;
 
         for (final String[] measurement : _observations) {
-            /**
-             * Switch on the measurement _ID
-             *
-             * 1 - BB start date (cane)
-             * 2 - BB Finish date (cane)
-             * 3 - Flower start date (cane)
-             * 4 -
-             * 5 -
-             * 6 - Flower finish date (cane)
-             * 7 - General comment
-             * ?
-             */
+            /*
+              Switch on the measurement _ID
+
+              1 - BB start date (cane)
+              2 - BB Finish date (cane)
+              3 - Flower start date (cane)
+              4 -
+              5 -
+              6 - Flower finish date (cane)
+              7 - General comment
+              ?
+            */
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -126,35 +152,14 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
     }
 
     @Override
-    public void onBarcodeFound(List<String> identifier) {
-        super.onBarcodeFound(identifier);
-
-        clearInputs();
-        enableInputs(budBreakForm);
-
-        textVineBudBreakStart.setOnClickListener(this);
-        textCaneBudBreakStart.setOnClickListener(this);
-        textCaneBudBreakFinish.setOnClickListener(this);
-        textVineFloweringStart.setOnClickListener(this);
-        textCaneFloweringStart.setOnClickListener(this);
-        textCaneFloweringFinish.setOnClickListener(this);
-
-        populateDataFields(loadCaneObservationsById(identifier.get(0)));
-
-    }
-
-    @Override
-    public void onClick(View view){
+    public void onClick(View view) {
         debugUtil.logMessage(TAG, "View clicked (" + view.getTag().toString() + ")", run_environment);
 
         DateSelectionDialog datePicker = new DateSelectionDialog();
 
-        String currentDate = ((TextView) view).getText().toString();
-        if (currentDate != null) {
-            Bundle args = new Bundle();
-            args.putString(getString(R.string.START_DATE), ((TextView) view).getText().toString());
-            datePicker.setArguments(args);
-        }
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.start_date), ((TextView) view).getText().toString());
+        datePicker.setArguments(args);
 
         datePicker.setActivatorView(view);
         datePicker.show(getActivity().getFragmentManager(), "datePicker");

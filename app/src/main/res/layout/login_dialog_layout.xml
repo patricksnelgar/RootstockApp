@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_width="match_parent" 
-    android:padding="10dp"
-    android:outlineProvider="background">
+    android:padding="10dp">
     <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
             android:id="@+id/headerTitle"
+            style="@style/Base.TextAppearance.AppCompat.Headline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Headline"
-            android:text="PFR Login"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp"
+            android:text="PFR Login" />
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="2dp"
@@ -28,53 +27,53 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/header"
+        android:layout_marginBottom="8dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="8dp">
+        android:layout_marginRight="16dp">
         <TextView
             android:id="@+id/textUsernameLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Username"
             android:layout_alignBaseline="@+id/username"
             android:layout_alignBottom="@+id/username"
             android:layout_alignParentStart="true"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+            android:text="Username" />
 
         <EditText
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
             android:layout_alignParentStart="true"
-            android:layout_marginLeft="80dp"/>
+            android:layout_marginLeft="80dp"
+            android:ems="10"
+            android:inputType="textPersonName" />
 
         <TextView
             android:id="@+id/textPasswordLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Password"
             android:layout_alignBaseline="@+id/password"
             android:layout_alignBottom="@+id/password"
             android:layout_alignParentStart="true"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+            android:text="Password" />
 
         <EditText
             android:id="@+id/password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
             android:layout_below="@id/username"
-            android:ems="10"
-            android:inputType="textPassword"
             android:layout_marginLeft="80dp"
-            android:layout_alignParentStart="true"/>
+            android:ems="10"
+            android:inputType="textPassword" />
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/responseForm"
-        android:layout_below="@+id/loginForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/loginForm"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp">
@@ -82,23 +81,23 @@
             android:id="@+id/textResponse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=""
-            android:layout_marginLeft="5dp"/>
+            android:layout_marginLeft="5dp"
+            android:text="" />
     </RelativeLayout>
 
     <Button
         android:id="@+id/buttonCancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cancel"
+        android:layout_below="@+id/responseForm"
         android:layout_toStartOf="@+id/buttonLogin"
-        android:layout_below="@+id/responseForm"/>
+        android:text="Cancel" />
     <Button
         android:id="@+id/buttonLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/responseForm"/>
+        android:layout_below="@+id/responseForm"
+        android:text="Login" />
 
 </RelativeLayout>
