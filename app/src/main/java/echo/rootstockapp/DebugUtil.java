@@ -5,9 +5,9 @@ import android.util.Log;
 public class DebugUtil {
 
     public static final String LOG_LEVEL_ERROR = "error";
-    static final String LOG_LEVEL_INFO = "info";
-    private static final String LOG_LEVEL_DEBUG = "debug";
-    private static final String LOG_LEVEL_WARN = "warn";
+    public static final String LOG_LEVEL_INFO = "info";
+    public static final String LOG_LEVEL_DEBUG = "debug";
+    public static final String LOG_LEVEL_WARN = "warn";
 
     public DebugUtil() {
     }

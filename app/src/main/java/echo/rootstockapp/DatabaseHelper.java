@@ -14,37 +14,37 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import echo.rootstockapp.DbContract.DbCaneIdentifiers;
-import echo.rootstockapp.DbContract.DbComponentIdentifiers;
-import echo.rootstockapp.DbContract.DbObservations;
-import echo.rootstockapp.DbContract.IdentifierColumnNames;
+import echo.rootstockapp.DatabaseContract.DatabaseCaneIdentifiers;
+import echo.rootstockapp.DatabaseContract.DatabaseComponentIdentifiers;
+import echo.rootstockapp.DatabaseContract.DatabaseObservations;
+import echo.rootstockapp.DatabaseContract.IdentifierColumnNames;
 
-public class DbHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "HandHeld.db";
     private static final int DATABASE_VERSION = 13;
-    private final String TAG = DbHelper.class.getSimpleName();
-    private String run_environment;
+    private final String TAG = DatabaseHelper.class.getSimpleName();
+    private String runEnvironment;
     private DebugUtil debugUtil;
 
-    private DbProgressListener dbProgressListener;
+    private DatabaseProgressListener databaseProgressListener;
 
-    public DbHelper(Context context, DbProgressListener l) {
+    public DatabaseHelper(Context context, DatabaseProgressListener l) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        run_environment = context.getString(R.string.run_environment);
+        runEnvironment = context.getString(R.string.run_environment);
         debugUtil = new DebugUtil();
-        dbProgressListener = l;
+        databaseProgressListener = l;
     }
 
-    public DbHelper(Context context) {
+    public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        run_environment = context.getString(R.string.run_environment);
+        runEnvironment = context.getString(R.string.run_environment);
         debugUtil = new DebugUtil();
     }
 
     public void insertIdentifiers(final File f) {
 
-        dbProgressListener.setProgressText("Writing to DB:");
+        databaseProgressListener.setProgressText("Writing to DB:");
         final SQLiteDatabase db = this.getWritableDatabase();
 
         new Thread(new Runnable() {
@@ -54,7 +54,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     int maxCount = getNumLinesInFile(f);
                     BufferedReader br = new BufferedReader(new FileReader(f));
                     String[] headers = br.readLine().split(",");
-                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
+                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", runEnvironment);
 
                     db.beginTransaction();
 
@@ -83,26 +83,26 @@ public class DbHelper extends SQLiteOpenHelper {
 
                         switch (input[2]) {
                             case "cane":
-                                rowID = db.insert(DbCaneIdentifiers.TABLE_NAME, null, _v);
+                                rowID = db.insert(DatabaseCaneIdentifiers.TABLE_NAME, null, _v);
                                 if (rowID != -1) count++;
                                 break;
                             case "component":
-                                rowID = db.insert(DbComponentIdentifiers.TABLE_NAME, null, _v);
+                                rowID = db.insert(DatabaseComponentIdentifiers.TABLE_NAME, null, _v);
                                 if (rowID != -1) count++;
                                 break;
                         }
-                        dbProgressListener.updateProgress(count, maxCount);
+                        databaseProgressListener.updateProgress(count, maxCount);
                     }
                     db.setTransactionSuccessful();
                     long endTime = System.currentTimeMillis();
-                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", run_environment);
+                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", runEnvironment);
                     if (count != maxCount - 1) {
-                        dbProgressListener.setResponseTextNegative("Failed to insert all records");
+                        databaseProgressListener.setResponseTextNegative("Failed to insert all records");
                     } else {
-                        dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
+                        databaseProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
                     }
                 } catch (Exception e) {
-                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 } finally {
                     db.endTransaction();
                 }
@@ -117,14 +117,14 @@ public class DbHelper extends SQLiteOpenHelper {
             lr.skip(Long.MAX_VALUE);
             return lr.getLineNumber();
         } catch (Exception fe) {
-            debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            debugUtil.logMessage(TAG, "getNumLinesInFile(): File not found", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
         }
 
         return -1;
     }
 
     public void insertObservations(final File file) {
-        dbProgressListener.setProgressText("Inserting observations: ");
+        databaseProgressListener.setProgressText("Inserting observations: ");
         final SQLiteDatabase db = this.getWritableDatabase();
 
         new Thread(new Runnable() {
@@ -134,7 +134,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     int maxCount = getNumLinesInFile(file);
                     BufferedReader br = new BufferedReader(new FileReader(file));
                     String[] headers = br.readLine().split(",");
-                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", run_environment);
+                    debugUtil.logMessage(TAG, "Column headers: <" + Arrays.toString(headers) + ">", runEnvironment);
 
                     db.beginTransaction();
 
@@ -150,32 +150,32 @@ public class DbHelper extends SQLiteOpenHelper {
                         line = br.readLine();
                         if (line == null) break;
                         String[] input = line.split(",");
-                        debugUtil.logMessage(TAG, "Line is <" + Arrays.toString(input) + ">", run_environment);
+                        debugUtil.logMessage(TAG, "Line is <" + Arrays.toString(input) + ">", runEnvironment);
 
-                        _v.put(DbObservations.OBSERVATIONS_VINE_SITE_TITLE, input[0]);
-                        _v.put(DbObservations.OBSERVATIONS_COMPONENT_ID_TITLE, input[2]);
-                        _v.put(DbObservations.OBSERVATIONS_CANE_ID_TITLE, input[4]);
-                        _v.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, input[6]);
-                        _v.put(DbObservations.OBSERVATIONS_VALUE_TITLE, input[8]);
-                        _v.put(DbObservations.OBSERVATIONS_CHANGED_TITLE, false);
+                        _v.put(DatabaseObservations.OBSERVATIONS_VINE_SITE_TITLE, input[0]);
+                        _v.put(DatabaseContract.DatabaseObservations.OBSERVATIONS_COMPONENT_ID_TITLE, input[2]);
+                        _v.put(DatabaseContract.DatabaseObservations.OBSERVATIONS_CANE_ID_TITLE, input[4]);
+                        _v.put(DatabaseContract.DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, input[6]);
+                        _v.put(DatabaseContract.DatabaseObservations.OBSERVATIONS_VALUE_TITLE, input[8]);
+                        _v.put(DatabaseContract.DatabaseObservations.OBSERVATIONS_CHANGED_TITLE, false);
 
 
                         // This will NOT handle checking for an already existing observation against the same measure ID and cane / component ID
-                        rowID = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, _v);
+                        rowID = db.insert(DatabaseContract.DatabaseObservations.OBSERVATIONS_TABLE_NAME, null, _v);
                         if (rowID != -1) count++;
 
-                        dbProgressListener.updateProgress(count, maxCount);
+                        databaseProgressListener.updateProgress(count, maxCount);
                     }
                     db.setTransactionSuccessful();
                     long endTime = System.currentTimeMillis();
-                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", run_environment);
+                    debugUtil.logMessage(TAG, "time taken to insert (" + count + " / " + (maxCount - 1) + ") records: " + (endTime - startTime) + "ms", runEnvironment);
                     if (count != maxCount - 1) {
-                        dbProgressListener.setResponseTextNegative("Failed to insert all records");
+                        databaseProgressListener.setResponseTextNegative("Failed to insert all records");
                     } else {
-                        dbProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
+                        databaseProgressListener.setResponseTextPositive("Done: (" + count + ") records loaded.");
                     }
                 } catch (Exception e) {
-                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                    debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 } finally {
                     db.endTransaction();
                 }
@@ -210,18 +210,18 @@ public class DbHelper extends SQLiteOpenHelper {
                 c.moveToNext();
                 return buildIdentifierReturnObject(c);
             } catch (Exception e) {
-                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             }
         }
 
-        debugUtil.logMessage(TAG, "Failed to find barcode <" + barcode + "> in DB", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        debugUtil.logMessage(TAG, "Failed to find barcode <" + barcode + "> in DB", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
         db.close();
         return null;
     }
 
     private Cursor lookupCane(SQLiteDatabase database, String[] columns, String filter, String[] values) {
         Cursor _t = database.query(
-                DbContract.DbCaneIdentifiers.TABLE_NAME,
+                DatabaseCaneIdentifiers.TABLE_NAME,
                 columns,
                 filter,
                 values,
@@ -229,14 +229,14 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null);
 
-        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", run_environment);
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from cane table", runEnvironment);
         if (_t.getCount() == 1) return _t;
         else return null;
     }
 
     private Cursor lookupComponent(SQLiteDatabase database, String[] columns, String filter, String[] values) {
         Cursor _t = database.query(
-                DbContract.DbComponentIdentifiers.TABLE_NAME,
+                DatabaseComponentIdentifiers.TABLE_NAME,
                 columns,
                 filter,
                 values,
@@ -244,7 +244,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 null,
                 null);
 
-        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", run_environment);
+        debugUtil.logMessage(TAG, "Retrieved (" + _t.getCount() + ") rows from components table", runEnvironment);
         if (_t.getCount() == 1) return _t;
         else return null;
     }
@@ -262,15 +262,15 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         List<String[]> observations = new ArrayList<>();
         String[] columns = new String[]{
-                DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
-                DbObservations.OBSERVATIONS_VALUE_TITLE
+                DatabaseContract.DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,
+                DatabaseContract.DatabaseObservations.OBSERVATIONS_VALUE_TITLE
         };
 
-        String columnFilter = DbObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
+        String columnFilter = DatabaseContract.DatabaseObservations.OBSERVATIONS_CANE_ID_TITLE + " = ?";
         String[] columnValues = new String[]{_ID};
 
         final Cursor cur = db.query(
-                DbObservations.OBSERVATIONS_TABLE_NAME,
+                DatabaseContract.DatabaseObservations.OBSERVATIONS_TABLE_NAME,
                 columns,
                 columnFilter,
                 columnValues,
@@ -280,22 +280,22 @@ public class DbHelper extends SQLiteOpenHelper {
         );
 
         if (cur.getCount() > 0) {
-            debugUtil.logMessage(TAG, "Got " + cur.getCount() + " observations for cane id: " + columnValues[0], run_environment);
+            debugUtil.logMessage(TAG, "Got " + cur.getCount() + " observations for cane id: " + columnValues[0], runEnvironment);
 
             for (int i = 0; i < cur.getCount(); i++) {
                 cur.moveToNext();
                 String[] _data = new String[2];
-                _data[0] = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
-                _data[1] = cur.getString(cur.getColumnIndexOrThrow(DbObservations.OBSERVATIONS_VALUE_TITLE));
+                _data[0] = cur.getString(cur.getColumnIndexOrThrow(DatabaseContract.DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE));
+                _data[1] = cur.getString(cur.getColumnIndexOrThrow(DatabaseContract.DatabaseObservations.OBSERVATIONS_VALUE_TITLE));
                 observations.add(_data);
-                debugUtil.logMessage(TAG, "Observation loaded: id (" + _data[0] + ") value (" + _data[1] + ")", run_environment);
+                debugUtil.logMessage(TAG, "Observation loaded: id (" + _data[0] + ") value (" + _data[1] + ")", runEnvironment);
             }
 
             db.close();
             cur.close();
             return observations;
         } else {
-            debugUtil.logMessage(TAG, "No observatiosn found for ID (" + _ID + ")", run_environment);
+            debugUtil.logMessage(TAG, "No observatiosn found for ID (" + _ID + ")", runEnvironment);
             db.close();
             cur.close();
             return null;
@@ -307,12 +307,12 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        debugUtil.logMessage(TAG, "User wants to save data: (" + data.toString() + ")", run_environment);
+        debugUtil.logMessage(TAG, "User wants to save data: (" + data.toString() + ")", runEnvironment);
 
         return false;
     }
 
-    public interface DbProgressListener {
+    public interface DatabaseProgressListener {
         void updateProgress(int progress, int total);
 
         void setProgressText(String message);
@@ -320,9 +320,11 @@ public class DbHelper extends SQLiteOpenHelper {
         void setResponseTextPositive(String message);
 
         void setResponseTextNegative(String message);
-    }    /*
+    }
+
+    /*
     public void saveData(View v){
-       debugUtil.logMessage(TAG, "Is edit? " + dataEdit, run_environment);
+       debugUtil.logMessage(TAG, "Is edit? " + dataEdit, runEnvironment);
 
         MeasurementText caneLengthText = (MeasurementText) findViewById(R.id.cane_length);
         MeasurementText caneDiameterText = (MeasurementText) findViewById(R.id.cane_diameter);
@@ -341,65 +343,65 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
 
         if(dataEdit){
-            debugUtil.logMessage(TAG,"Updating values for cane " + caneId, run_environment);
-            String queryLength = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE +
-            " = " + caneLengthMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneLengthMeasurementId;
+            debugUtil.logMessage(TAG,"Updating values for cane " + caneId, runEnvironment);
+            String queryLength = "UPDATE " + DatabaseObservations.OBSERVATIONS_TABLE_NAME + " SET " + DatabaseObservations.OBSERVATIONS_VALUE_TITLE +
+            " = " + caneLengthMeasurement + ", " +  DatabaseObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
+            "\" WHERE " + DatabaseObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
+            DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneLengthMeasurementId;
 
-            String queryDiameter = "UPDATE " + DbObservations.OBSERVATIONS_TABLE_NAME + " SET " + DbObservations.OBSERVATIONS_VALUE_TITLE +
-            " = " + caneDiameterMeasurement + ", " +  DbObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
-            "\" WHERE " + DbObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
-            DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneDiameterMeasurementId;
+            String queryDiameter = "UPDATE " + DatabaseObservations.OBSERVATIONS_TABLE_NAME + " SET " + DatabaseObservations.OBSERVATIONS_VALUE_TITLE +
+            " = " + caneDiameterMeasurement + ", " +  DatabaseObservations.OBSERVATIONS_METADATA_TITLE + " = \"" + metaData +
+            "\" WHERE " + DatabaseObservations.OBSERVATIONS_CANE_ID_TITLE + "=" + caneId + " AND " +
+            DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE + "=" + caneDiameterMeasurementId;
 
             try{
                 db.execSQL(queryLength);
                 db.execSQL(queryDiameter);
             } catch (Exception e){
-                debugUtil.logMessage(TAG, "Error updating " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Error updating " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 return;
             }
 
-            debugUtil.logMessage(TAG, "Data has been updated for cane " + caneId, run_environment);
+            debugUtil.logMessage(TAG, "Data has been updated for cane " + caneId, runEnvironment);
         } else{
-            debugUtil.logMessage(TAG,"Saving new data", DebugUtil.LOG_LEVEL_INFO, run_environment);
+            debugUtil.logMessage(TAG,"Saving new data", DebugUtil.LOG_LEVEL_INFO, runEnvironment);
             ContentValues values = new ContentValues();
 
             // construct caneLength observation
-            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,caneLengthText.getMeasurementId());
-            values.put(DbObservations.OBSERVATIONS_CANE_ID_TITLE, caneId);
-            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneLengthMeasurement);
-            values.put(DbObservations.OBSERVATIONS_METADATA_TITLE, metaData);
-            values.put(DbObservations.OBSERVATIONS_CHANGED_TITLE, true);
+            values.put(DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE,caneLengthText.getMeasurementId());
+            values.put(DatabaseObservations.OBSERVATIONS_CANE_ID_TITLE, caneId);
+            values.put(DatabaseObservations.OBSERVATIONS_VALUE_TITLE, caneLengthMeasurement);
+            values.put(DatabaseObservations.OBSERVATIONS_METADATA_TITLE, metaData);
+            values.put(DatabaseObservations.OBSERVATIONS_CHANGED_TITLE, true);
 
-            long rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
+            long rowId = db.insert(DatabaseObservations.OBSERVATIONS_TABLE_NAME, null, values);
 
-            debugUtil.logMessage(TAG, "Saved length: " + rowId, run_environment);
+            debugUtil.logMessage(TAG, "Saved length: " + rowId, runEnvironment);
 
-            values.put(DbObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, caneDiameterText.getMeasurementId());
-            values.put(DbObservations.OBSERVATIONS_VALUE_TITLE, caneDiameterMeasurement);
+            values.put(DatabaseObservations.OBSERVATIONS_MEASUREMENT_ID_TITLE, caneDiameterText.getMeasurementId());
+            values.put(DatabaseObservations.OBSERVATIONS_VALUE_TITLE, caneDiameterMeasurement);
 
             rowId = -1;
-            rowId = db.insert(DbObservations.OBSERVATIONS_TABLE_NAME, null, values);
+            rowId = db.insert(DatabaseObservations.OBSERVATIONS_TABLE_NAME, null, values);
 
-            debugUtil.logMessage(TAG, "Saved diameter: " + rowId, run_environment);
+            debugUtil.logMessage(TAG, "Saved diameter: " + rowId, runEnvironment);
         }
     }
 
     public void copyDatabase(View v){
-       debugUtil.logMessage(TAG, "Try to copy db", run_environment);
+       debugUtil.logMessage(TAG, "Try to copy db", runEnvironment);
         try{
             File sd = Environment.getExternalStorageDirectory();
             File internal = Environment.getDataDirectory();
 
             if(sd.canWrite()){
-                debugUtil.logMessage(TAG, "Can write", run_environment);
-                debugUtil.logMessage(TAG, "Data path: " + internal.toString(), run_environment);
+                debugUtil.logMessage(TAG, "Can write", runEnvironment);
+                debugUtil.logMessage(TAG, "Data path: " + internal.toString(), runEnvironment);
                 File deviceDb = new File(internal,"/user/0/echo.rootstockapp/databases/HandHeld.db");
                 File newDb = new File("/sdcard/HandHeld.db");
 
                 if(deviceDb.exists()){
-                   debugUtil.logMessage(TAG, "Db exists", run_environment);
+                   debugUtil.logMessage(TAG, "Db exists", runEnvironment);
                     FileChannel src = new FileInputStream(deviceDb).getChannel();
                     FileChannel dst = new FileOutputStream(newDb).getChannel();
                     dst.transferFrom(src, 0, src.size());
@@ -408,7 +410,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
             }
         } catch (Exception e){
-            debugUtil.logMessage(TAG, "Error copying Db: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            debugUtil.logMessage(TAG, "Error copying Db: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
         }
     }
 
@@ -453,26 +455,26 @@ public class DbHelper extends SQLiteOpenHelper {
     */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(DbContract.DbObservations.SQL_CREATE_OBSERVATIONS);
-        db.execSQL(DbContract.DbCaneIdentifiers.SQL_CREATE_TABLE);
-        db.execSQL(DbContract.DbComponentIdentifiers.SQL_CREATE_TABLE);
+        db.execSQL(DatabaseContract.DatabaseObservations.SQL_CREATE_OBSERVATIONS);
+        db.execSQL(DatabaseCaneIdentifiers.SQL_CREATE_TABLE);
+        db.execSQL(DatabaseComponentIdentifiers.SQL_CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        debugUtil.logMessage(TAG, "Upgrading DB", run_environment);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbCaneIdentifiers.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
+        debugUtil.logMessage(TAG, "Upgrading DB", runEnvironment);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.DatabaseCaneIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseComponentIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.DatabaseObservations.OBSERVATIONS_TABLE_NAME);
         onCreate(db);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        debugUtil.logMessage(TAG, "Downgrading DB", run_environment);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbCaneIdentifiers.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbComponentIdentifiers.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
+        debugUtil.logMessage(TAG, "Downgrading DB", runEnvironment);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseCaneIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseComponentIdentifiers.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.DatabaseObservations.OBSERVATIONS_TABLE_NAME);
         onCreate(db);
     }
 

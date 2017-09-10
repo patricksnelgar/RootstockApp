@@ -32,7 +32,7 @@ public class DateSelectionDialog extends DialogFragment implements DatePickerDia
         if (getArguments() != null) {
             try {
                 String[] split = getArguments().getString(getString(R.string.start_date)).split("/");
-                if (split != null) {
+                if (split != null && split.length == 3) {
                     // parse the split date into Integer format
                     // format: dd/mm/yyyy (2/11/2017)
                     day = Integer.parseInt(split[0]);
@@ -68,6 +68,5 @@ public class DateSelectionDialog extends DialogFragment implements DatePickerDia
             }
         });
     }
-
 
 }

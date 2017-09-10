@@ -20,7 +20,7 @@ import java.util.List;
 
 import echo.rootstockapp.dialogs.LoadDataDialog;
 import echo.rootstockapp.dialogs.NetworkLoginDialog;
-import echo.rootstockapp.forms.BudBreakFragment;
+import echo.rootstockapp.forms.BudbreakFragment;
 import echo.rootstockapp.forms.CaneInfoFragment;
 
 
@@ -31,7 +31,7 @@ import echo.rootstockapp.forms.CaneInfoFragment;
 
 public class MainActivity extends Activity implements ScannerManager.BarcodeFoundListener {
 
-    private final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private int formIndex = -1;
     private int fragmentID = -1;
@@ -39,7 +39,7 @@ public class MainActivity extends Activity implements ScannerManager.BarcodeFoun
     private DebugUtil debugUtil = new DebugUtil();
     private ScannerManager scannerManager;
 
-    private DbHelper databaseHelper;
+    private DatabaseHelper databaseHelper;
 
     private Fragment currentFragment;
 
@@ -57,7 +57,7 @@ public class MainActivity extends Activity implements ScannerManager.BarcodeFoun
         changeActionBarTitle(getString(R.string.app_name));
 
         scannerManager = new ScannerManager(getApplicationContext(), this);
-        databaseHelper = new DbHelper(getApplicationContext());
+        databaseHelper = new DatabaseHelper(getApplicationContext());
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -135,7 +135,7 @@ public class MainActivity extends Activity implements ScannerManager.BarcodeFoun
                     fragmentID = 0;
                     break;
                 case "Bud break / Flowering":
-                    loadFragment(new BudBreakFragment());
+                    loadFragment(new BudbreakFragment());
                     changeActionBarTitle(formName);
                     fragmentID = 1;
                     break;
@@ -228,7 +228,7 @@ public class MainActivity extends Activity implements ScannerManager.BarcodeFoun
                 SQLiteDatabase db = databaseHelper.getWritableDatabase();
                 try {
                     db.beginTransaction();
-                    db.execSQL("DELETE FROM " + DbContract.DbObservations.OBSERVATIONS_TABLE_NAME);
+                    db.execSQL("DELETE FROM " + DatabaseContract.DatabaseObservations.OBSERVATIONS_TABLE_NAME);
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
                     debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, getString(R.string.run_environment));
@@ -263,7 +263,7 @@ public class MainActivity extends Activity implements ScannerManager.BarcodeFoun
                 ((CaneInfoFragment) currentFragment).onBarcodeFound(identifier);
                 break;
             case 1:
-                ((BudBreakFragment) currentFragment).onBarcodeFound(identifier);
+                ((BudbreakFragment) currentFragment).onBarcodeFound(identifier);
                 break;
             default:
         }

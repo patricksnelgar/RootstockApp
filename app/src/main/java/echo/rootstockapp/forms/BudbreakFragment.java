@@ -14,11 +14,11 @@ import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 import echo.rootstockapp.dialogs.DateSelectionDialog;
 
-public class BudBreakFragment extends BaseFragment implements View.OnClickListener {
+public class BudbreakFragment extends BaseFragment implements View.OnClickListener {
 
-    private final String TAG = BudBreakFragment.class.getSimpleName();
+    private final String TAG = BudbreakFragment.class.getSimpleName();
 
-    private String run_environment;
+    private String runEnvironment;
     private DebugUtil debugUtil;
     final View.OnClickListener saveDataOnClickListener = new View.OnClickListener() {
 
@@ -26,7 +26,7 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         public void onClick(View view) {
 
             String user = getUser();
-            debugUtil.logMessage(TAG, "User (" + user + ") wants to save data", run_environment);
+            debugUtil.logMessage(TAG, "User (" + user + ") wants to save data", runEnvironment);
         }
     };
     private RelativeLayout budBreakForm;
@@ -51,7 +51,7 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         textCaneFloweringStart = (TextView) v.findViewById(R.id.text_cane_flowering_start);
         textCaneFloweringFinish = (TextView) v.findViewById(R.id.text_cane_flowering_finish);
 
-        run_environment = getRunEnvironment();
+        runEnvironment = getRunEnvironment();
         debugUtil = new DebugUtil();
 
         registerSaveButton(saveDataOnClickListener);
@@ -63,7 +63,7 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
     public void onBarcodeFound(List<String> identifier) {
         super.onBarcodeFound(identifier);
 
-        clearInputs();
+        clearInputs(budBreakForm);
         enableInputs(budBreakForm);
 
         getActivity().runOnUiThread(new Runnable() {
@@ -84,21 +84,8 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
 
     }
 
-    private void clearInputs() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                textVineBudBreakStart.setText("");
-                textCaneBudBreakStart.setText("");
-                textCaneBudBreakFinish.setText("");
-                textVineFloweringStart.setText("");
-                textCaneFloweringStart.setText("");
-                textCaneFloweringFinish.setText("");
-            }
-        });
-    }
-
-    private void populateDataFields(List<String[]> _observations) {
+    @Override
+    void populateDataFields(List<String[]> _observations) {
         if (_observations == null) return;
 
         for (final String[] measurement : _observations) {
@@ -131,7 +118,7 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
                             textCaneFloweringFinish.setText(parseDate(measurement[1]));
                             break;
                         default:
-                            debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
+                            debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", runEnvironment);
                             break;
                     }
                 }
@@ -143,17 +130,17 @@ public class BudBreakFragment extends BaseFragment implements View.OnClickListen
         try {
             String[] dateSplit = date.split("-");
             String returnDate = dateSplit[2] + "/" + dateSplit[1] + "/" + dateSplit[0];
-            debugUtil.logMessage(TAG, "output date (" + returnDate + ")", run_environment);
+            debugUtil.logMessage(TAG, "output date (" + returnDate + ")", runEnvironment);
             return returnDate;
         } catch (Exception e) {
-            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             return null;
         }
     }
 
     @Override
     public void onClick(View view) {
-        debugUtil.logMessage(TAG, "View clicked (" + view.getTag().toString() + ")", run_environment);
+        debugUtil.logMessage(TAG, "View clicked (" + view.getTag().toString() + ")", runEnvironment);
 
         DateSelectionDialog datePicker = new DateSelectionDialog();
 

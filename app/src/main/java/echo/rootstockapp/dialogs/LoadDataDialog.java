@@ -25,16 +25,16 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
-import echo.rootstockapp.DbHelper;
+import echo.rootstockapp.DatabaseHelper;
 import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 
 
-public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgressListener {
+public class LoadDataDialog extends DialogFragment implements DatabaseHelper.DatabaseProgressListener {
 
     public static String ACTION_KEY = "action";
     public static String TITLE_KEY = "title";
-    private final String TAG = LoadDataDialog.class.getSimpleName();
+    private final String TAG = LoadDataDialog.class.getSimpleName();    
     List<String> listSites = new ArrayList<>(Collections.singletonList("Choose a site"));
     List<String> listCodes = new ArrayList<>(Collections.singletonList("null"));
     List<String> listBlocks = new ArrayList<>(Collections.singletonList("Choose a block"));
@@ -49,8 +49,8 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             dialog.dismiss();
         }
     };
-    private String API_URL;
-    private String run_environment;
+    private String apiUrl;
+    private String runEnvironment;
     private TextView textResponseMessage;
     private TextView textTitle;
     private ProgressBar progressBar;
@@ -64,7 +64,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         @Override
         public void onItemSelected(AdapterView<?> parent, View v, int index, long id) {
 
-            debugUtil.logMessage(TAG, "User selected block at: <" + index + ">", run_environment);
+            debugUtil.logMessage(TAG, "User selected block at: <" + index + ">", runEnvironment);
             if (index == 0) {
                 block = null;
                 return;
@@ -78,12 +78,14 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
         }
     };
+    private DatabaseHelper databaseHelper;
+    private ACTIONS formAction;
     private AsyncHttpClient asyncHttpClient;
     final AdapterView.OnItemSelectedListener onSiteSelectedListener = new AdapterView.OnItemSelectedListener() {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View v, int index, long id) {
-            debugUtil.logMessage(TAG, "User selected site at: <" + index + ">", run_environment);
+            debugUtil.logMessage(TAG, "User selected site at: <" + index + ">", runEnvironment);
             // User selected the default 'no choice' option.
             if (index == 0) {
                 site = null;
@@ -101,8 +103,6 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
         }
     };
-    private DbHelper databaseHelper;
-    private ACTIONS formAction;
     final View.OnClickListener onLoadDataClickListener = new View.OnClickListener() {
 
         @Override
@@ -123,14 +123,14 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        String AUTHORIZATION_KEY = getActivity().getString(R.string.authorization_key);
-        API_URL = getActivity().getString(R.string.API_URL);
-        run_environment = getActivity().getString(R.string.run_environment);
+        String authorizationKey = getActivity().getString(R.string.authorization_key);
+        apiUrl = getActivity().getString(R.string.API_URL);
+        runEnvironment = getActivity().getString(R.string.run_environment);
 
         asyncHttpClient = new AsyncHttpClient();
-        asyncHttpClient.addHeader("Authorization", AUTHORIZATION_KEY);
+        asyncHttpClient.addHeader("Authorization", authorizationKey);
 
-        databaseHelper = new DbHelper(getActivity().getApplicationContext(), this);
+        databaseHelper = new DatabaseHelper(getActivity().getApplicationContext(), this);
 
         debugUtil = new DebugUtil();
 
@@ -177,27 +177,27 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
         // Can change to loading from API call
         hideResponses();
         setResponseTextNegative("Loading sites...");
-        asyncHttpClient.get(API_URL + "/fdc/sites", new AsyncHttpResponseHandler() {
+        asyncHttpClient.get(apiUrl + "/fdc/sites", new AsyncHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Got sites: " + responseString, run_environment);
+                debugUtil.logMessage(TAG, "Got sites: " + responseString, runEnvironment);
                 if (statusCode == 200 && responseString.length() > 0) {
                     hideResponses();
                     try {
                         //JSONObject parsedResponse = new JSONObject(responseString);
                         JSONArray tok = new JSONArray(responseString);
-                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
+                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", runEnvironment);
                         for (int i = 0; i < tok.length(); i++) {
                             JSONObject _obj = tok.getJSONObject(i);
-                            debugUtil.logMessage(TAG, "code: " + _obj.getString("code"), run_environment);
+                            debugUtil.logMessage(TAG, "code: " + _obj.getString("code"), runEnvironment);
                             addSite(_obj.getString("code"), _obj.getString("name"));
                         }
-                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", runEnvironment);
                         //addSite(parsedResponse.getString("code"));
                     } catch (Exception e) {
-                        debugUtil.logMessage(TAG, "couldn't parse string into JSON: " + e.getLocalizedMessage(), run_environment);
+                        debugUtil.logMessage(TAG, "couldn't parse string into JSON: " + e.getLocalizedMessage(), runEnvironment);
                         setResponseTextNegative("Failed to load sites");
                         lockResponses = true;
                     }
@@ -208,7 +208,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Failed with code: " + statusCode + "\nMessage: " + responseString, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Failed with code: " + statusCode + "\nMessage: " + responseString, DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 setResponseTextNegative("Failed to load sites");
             }
         });
@@ -237,29 +237,29 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
     private void loadBlocksFromSiteCode(String siteCode) {
         // Can change to loading from API call
         hideResponses();
-        debugUtil.logMessage(TAG, "User wants data from: " + siteCode, run_environment);
+        debugUtil.logMessage(TAG, "User wants data from: " + siteCode, runEnvironment);
         setResponseTextNegative("Loading blocks...");
-        asyncHttpClient.get(API_URL + "/fdc/blocks?site=" + siteCode, new AsyncHttpResponseHandler() {
+        asyncHttpClient.get(apiUrl + "/fdc/blocks?site=" + siteCode, new AsyncHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Got response: " + responseString, run_environment);
+                debugUtil.logMessage(TAG, "Got response: " + responseString, runEnvironment);
                 if (statusCode == 200 && responseString.length() > 0) {
                     hideResponses();
                     try {
                         //JSONObject parsedResponse = new JSONObject(responseString);
                         JSONArray tok = new JSONArray(responseString);
-                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", run_environment);
+                        debugUtil.logMessage(TAG, "Array contains (" + tok.length() + ")", runEnvironment);
                         for (int i = 0; i < tok.length(); i++) {
                             JSONObject _obj = tok.getJSONObject(i);
-                            debugUtil.logMessage(TAG, "code: " + _obj.getString("block"), run_environment);
+                            debugUtil.logMessage(TAG, "code: " + _obj.getString("block"), runEnvironment);
                             addBlock(_obj.getString("block"));
                         }
-                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", run_environment);
+                        //debugUtil.logMessage(TAG, "("+ parsedResponse.names().toString() + ")", runEnvironment);
                         //addSite(parsedResponse.getString("code"));
                     } catch (Exception e) {
-                        debugUtil.logMessage(TAG, "couldn't parse string into JSON: " + e.getLocalizedMessage(), run_environment);
+                        debugUtil.logMessage(TAG, "couldn't parse string into JSON: " + e.getLocalizedMessage(), runEnvironment);
                         setResponseTextNegative("Failed to load sites");
                     }
                 } else
@@ -269,7 +269,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Failed with code: " + statusCode + "\nMessage: " + responseString, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Failed with code: " + statusCode + "\nMessage: " + responseString, DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 setResponseTextNegative("Failed to load sites");
             }
         });
@@ -288,8 +288,8 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
         hideResponses();
 
-        String url = API_URL + "/fdc/";
-        //debugUtil.logMessage(TAG, "Form action is (" + formAction + ")", run_environment);
+        String url = apiUrl + "/fdc/";
+        //debugUtil.logMessage(TAG, "Form action is (" + formAction + ")", runEnvironment);
         switch (formAction) {
             case IDENTIFIERS:
                 url += "download/" + site + "/" + block;
@@ -300,7 +300,7 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                 break;
         }
 
-        //debugUtil.logMessage(TAG, "URL is: <" + url + ">", run_environment);
+        //debugUtil.logMessage(TAG, "URL is: <" + url + ">", runEnvironment);
 
         // build query for Kakapo
         asyncHttpClient.get(url, new AsyncHttpResponseHandler() {
@@ -308,9 +308,9 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "onSuccess [" + statusCode + "]: response size<" + responseString.length() + ">", run_environment);
+                debugUtil.logMessage(TAG, "onSuccess [" + statusCode + "]: response size<" + responseString.length() + ">", runEnvironment);
                 if (statusCode == 200 && responseString.length() > 0) {
-                    debugUtil.logMessage(TAG, "Response is: <" + responseString + ">", run_environment);
+                    debugUtil.logMessage(TAG, "Response is: <" + responseString + ">", runEnvironment);
                     try {
                         JSONObject json = new JSONObject(responseString);
                         String path = json.getString("path");
@@ -319,18 +319,18 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
                             setResponseTextNegative("No records found");
 
                         } else {
-                            debugUtil.logMessage(TAG, "File path <" + path + ">", run_environment);
+                            debugUtil.logMessage(TAG, "File path <" + path + ">", runEnvironment);
                             saveFile(path);
                         }
                     } catch (Exception e) {
-                        debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                        debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                     }
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error) {
-                debugUtil.logMessage(TAG, "onFailure [" + statusCode + "]: response size<" + response.length + ">", run_environment);
+                debugUtil.logMessage(TAG, "onFailure [" + statusCode + "]: response size<" + response.length + ">", runEnvironment);
             }
         });
 
@@ -344,12 +344,12 @@ public class LoadDataDialog extends DialogFragment implements DbHelper.DbProgres
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable error, File response) {
-                debugUtil.logMessage(TAG, "File get code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "File get code: " + statusCode, DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             }
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, File response) {
-                debugUtil.logMessage(TAG, "File get code: " + statusCode, run_environment);
+                debugUtil.logMessage(TAG, "File get code: " + statusCode, runEnvironment);
 
                 if (statusCode == 200 && response != null) {
                     switch (formAction) {

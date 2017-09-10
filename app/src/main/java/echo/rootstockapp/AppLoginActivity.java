@@ -15,7 +15,7 @@ public class AppLoginActivity extends Activity {
 
     private final String TAG = AppLoginActivity.class.getSimpleName();
     private DebugUtil debugUtil = new DebugUtil();
-    private String run_environment;
+    private String runEnvironment;
     private TextView textPinMessage;
     private TextView textUsernameMessage;
     private EditText editPin;
@@ -27,7 +27,7 @@ public class AppLoginActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            debugUtil.logMessage(TAG, "Verifying info", run_environment);
+            debugUtil.logMessage(TAG, "Verifying info", runEnvironment);
             try {
                 int configPin = getResources().getInteger(R.integer.PIN);
                 int inputPin = Integer.parseInt((((EditText) findViewById(R.id.pin)).getText().toString()));
@@ -41,14 +41,14 @@ public class AppLoginActivity extends Activity {
                     textPinMessage.setVisibility(View.VISIBLE);
                 }
             } catch (Exception e) {
-                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 textPinMessage.setTextColor(getResources().getColor(R.color.colorTextError, null));
                 textPinMessage.setVisibility(View.VISIBLE);
             }
 
             try {
                 String username = ((EditText) findViewById(R.id.username)).getText().toString();
-                debugUtil.logMessage(TAG, "Username is: <" + username + "> length=" + username.length(), run_environment);
+                debugUtil.logMessage(TAG, "Username is: <" + username + "> length=" + username.length(), runEnvironment);
                 if (username.length() <= 0) {
                     validUsername = false;
                     textUsernameMessage.setTextColor(getResources().getColor(R.color.colorTextError, null));
@@ -58,11 +58,11 @@ public class AppLoginActivity extends Activity {
                     textUsernameMessage.setVisibility(View.INVISIBLE);
                 }
             } catch (Exception e) {
-                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Error: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             }
 
             if (validPin && validUsername) {
-                debugUtil.logMessage(TAG, "User verified", run_environment);
+                debugUtil.logMessage(TAG, "User verified", runEnvironment);
                 editPin.setEnabled(false);
                 editUsername.setEnabled(false);
 
@@ -83,7 +83,7 @@ public class AppLoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_login_layout);
 
-        run_environment = getResources().getString(R.string.run_environment);
+        runEnvironment = getResources().getString(R.string.run_environment);
 
         editPin = (EditText) findViewById(R.id.pin);
         editUsername = (EditText) findViewById(R.id.username);

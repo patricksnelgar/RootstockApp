@@ -2,7 +2,7 @@ package echo.rootstockapp;
 
 import android.provider.BaseColumns;
 
-public final class DbContract {
+public final class DatabaseContract {
 
     static class IdentifierColumnNames {
         static final String _ID = "_id";
@@ -16,7 +16,7 @@ public final class DbContract {
 
     }
 
-    static class DbComponentIdentifiers implements BaseColumns {
+    static class DatabaseComponentIdentifiers implements BaseColumns {
         static final String TABLE_NAME = "component_identifiers";
         static final String BARCODE_TITLE = IdentifierColumnNames.BARCODE_TITLE;
         static final String TYPE_TITLE = IdentifierColumnNames.TYPE_TITLE;
@@ -37,7 +37,7 @@ public final class DbContract {
                 GRAFT_YEAR_TITLE + " Text)";
     }
 
-    static class DbCaneIdentifiers implements BaseColumns {
+    static class DatabaseCaneIdentifiers implements BaseColumns {
         static final String TABLE_NAME = "cane_identifiers";
         static final String BARCODE_TITLE = IdentifierColumnNames.BARCODE_TITLE;
         static final String TYPE_TITLE = IdentifierColumnNames.TYPE_TITLE;
@@ -58,12 +58,12 @@ public final class DbContract {
                 GRAFT_YEAR_TITLE + " Text)";
     }
 
-    static class DbObservations implements BaseColumns {
+    static class DatabaseObservations implements BaseColumns {
         static final String OBSERVATIONS_TABLE_NAME = "observations";
         static final String OBSERVATIONS_VINE_SITE_TITLE = "vine_site";              // Refers to the orchard code
         static final String OBSERVATIONS_MEASUREMENT_ID_TITLE = "measurement_id";    // The _ID of the measurement
-        static final String OBSERVATIONS_COMPONENT_ID_TITLE = "component_id";        // Links to the _ID of DbComponentIdentifiers table
-        static final String OBSERVATIONS_CANE_ID_TITLE = "cane_id";                  // Links to the _ID of DbCaneIdentifiers table
+        static final String OBSERVATIONS_COMPONENT_ID_TITLE = "component_id";        // Links to the _ID of DatabaseComponentIdentifiers table
+        static final String OBSERVATIONS_CANE_ID_TITLE = "cane_id";                  // Links to the _ID of DatabaseCaneIdentifiers table
         static final String OBSERVATIONS_VALUE_TITLE = "value";
         static final String OBSERVATIONS_METADATA_TITLE = "metadata";
         static final String OBSERVATIONS_CHANGED_TITLE = "changed";
@@ -80,10 +80,8 @@ public final class DbContract {
     }
 
     // Fill in the rest of this when functionality is implemented kakapo side
-    public static class DbMeasurementInfo implements BaseColumns {
-        public static final String SQL_CREATE_MEASUREMTENS = "Create table";
-
-        public static final String MEASUREMENT_INFO_TABLE_NAME = "measurement_info";
-
+    static class DatabaseMeasurementInfo implements BaseColumns {
+        static final String MEASUREMENT_INFO_TABLE_NAME = "measurement_info";
+        static final String SQL_CREATE_MEASUREMTENS = "Create table " + MEASUREMENT_INFO_TABLE_NAME;
     }
 }

@@ -20,14 +20,14 @@ class ScannerManager {
     private AidcManager aidcManager;
     private BarcodeReader barcodeReader;
     private DebugUtil debugUtil;
-    private String run_environment;
+    private String runEnvironment;
     private boolean hasScanner = false;
 
     private BarcodeFoundListener barcodeFoundListener;
 
     ScannerManager(Context context, BarcodeFoundListener l) {
         debugUtil = new DebugUtil();
-        run_environment = context.getString(R.string.run_environment);
+        runEnvironment = context.getString(R.string.run_environment);
         barcodeFoundListener = l;
 
         AidcManager.create(context, new CreatedCallback() {
@@ -52,14 +52,14 @@ class ScannerManager {
                     barcodeReader.setProperties(properties);
 
                 } catch (Exception e) {
-                    debugUtil.logMessage(TAG, "Could not set property: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                    debugUtil.logMessage(TAG, "Could not set property: " + e.getLocalizedMessage(), DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 }
 
                 hasScanner = claimScanner();
                 if (hasScanner) {
                     registerBarcodeListener();
                 } else {
-                    debugUtil.logMessage(TAG, "Could not claim scanner", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                    debugUtil.logMessage(TAG, "Could not claim scanner", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 }
 
             }
@@ -71,12 +71,12 @@ class ScannerManager {
             if (barcodeReader != null) {
                 barcodeReader.claim();
             } else {
-                debugUtil.logMessage(TAG, "reader is null", run_environment);
+                debugUtil.logMessage(TAG, "reader is null", runEnvironment);
                 barcodeReader = aidcManager.createBarcodeReader();
                 barcodeReader.claim();
             }
         } catch (ScannerUnavailableException se) {
-            debugUtil.logMessage(TAG, "Could not claim scanner.", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+            debugUtil.logMessage(TAG, "Could not claim scanner.", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             return false;
         }
 
@@ -89,12 +89,12 @@ class ScannerManager {
 
             @Override
             public void onBarcodeEvent(BarcodeReadEvent event) {
-                debugUtil.logMessage(TAG, "Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, run_environment);
+                debugUtil.logMessage(TAG, "Got barcode read event: " + event.getBarcodeData(), DebugUtil.LOG_LEVEL_INFO, runEnvironment);
                 barcodeFoundListener.onBarcodeFound(event.getBarcodeData());
             }
 
             public void onFailureEvent(BarcodeFailureEvent failureEvent) {
-                debugUtil.logMessage(TAG, "Barcode failure event", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Barcode failure event", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
             }
         });
     }

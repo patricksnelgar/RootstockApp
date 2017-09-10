@@ -25,9 +25,9 @@ public class NetworkLoginDialog extends DialogFragment {
     private EditText editPassword;
     private TextView textResponse;
     private DebugUtil debugUtil;
-    private String API_URL;
-    private String run_environment;
-    private String AUTHORIZATION_KEY;
+    private String apiUrl;
+    private String runEnvironment;
+    private String authorizationKey;
     final View.OnClickListener buttonLoginOnClickListener = new View.OnClickListener() {
 
         @Override
@@ -67,9 +67,9 @@ public class NetworkLoginDialog extends DialogFragment {
         buttonLogin.setOnClickListener(buttonLoginOnClickListener);
         buttonCancel.setOnClickListener(buttonCancelOnClickListener);
 
-        run_environment = getString(R.string.run_environment);
-        API_URL = getString(R.string.API_URL);
-        AUTHORIZATION_KEY = getString(R.string.authorization_key);
+        runEnvironment = getString(R.string.run_environment);
+        apiUrl = getString(R.string.API_URL);
+        authorizationKey = getString(R.string.authorization_key);
 
         return dialog;
     }
@@ -81,22 +81,22 @@ public class NetworkLoginDialog extends DialogFragment {
             return;
         }
 
-        if (AUTHORIZATION_KEY == null) {
-            debugUtil.logMessage(TAG, "No API authorization key", DebugUtil.LOG_LEVEL_ERROR, run_environment);
+        if (authorizationKey == null) {
+            debugUtil.logMessage(TAG, "No API authorization key", DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
-        client.addHeader("Authorization", AUTHORIZATION_KEY);
+        client.addHeader("Authorization", authorizationKey);
         RequestParams params = new RequestParams();
         params.put("username", username);
         params.put("password", password);
 
-        client.post(API_URL + "/authenticate", params, new AsyncHttpResponseHandler() {
+        client.post(apiUrl + "/authenticate", params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, run_environment);
-                debugUtil.logMessage(TAG, "Contains error: " + responseString.contains("error"), run_environment);
+                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, runEnvironment);
+                debugUtil.logMessage(TAG, "Contains error: " + responseString.contains("error"), runEnvironment);
                 if (statusCode == 200 && !responseString.contains("error")) {
                     textResponse.setTextColor(getActivity().getResources().getColor(R.color.colorTextSuccess, null));
                     textResponse.setText(R.string.network_login_success_text);
@@ -109,7 +109,7 @@ public class NetworkLoginDialog extends DialogFragment {
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] response, Throwable error) {
                 String responseString = new String(response);
-                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, DebugUtil.LOG_LEVEL_ERROR, run_environment);
+                debugUtil.logMessage(TAG, "Status: " + statusCode + " response: " + responseString, DebugUtil.LOG_LEVEL_ERROR, runEnvironment);
                 textResponse.setTextColor(getActivity().getResources().getColor(R.color.colorTextError, null));
                 textResponse.setText(R.string.network_login_fail_text);
             }

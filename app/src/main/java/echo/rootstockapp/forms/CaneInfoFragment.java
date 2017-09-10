@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import echo.rootstockapp.DbHelper;
+import echo.rootstockapp.DatabaseHelper;
 import echo.rootstockapp.DebugUtil;
 import echo.rootstockapp.R;
 import echo.rootstockapp.views.MeasurementText;
@@ -27,7 +27,6 @@ public class CaneInfoFragment extends BaseFragment {
 
     private static String TAG = CaneInfoFragment.class.getSimpleName();
 
-    private String run_environment;
     private RelativeLayout caneInfoHolder;
     private MeasurementText observationCaneLength;
     private MeasurementText observationCaneDiameter;
@@ -47,16 +46,17 @@ public class CaneInfoFragment extends BaseFragment {
             boolean boolCaneExists = observationCaneExists.isChecked();
 
             if (user != null) {
-                debugUtil.logMessage(TAG, "User (" + user + ") wants to save data for (" + barcode + ")", run_environment);
+                debugUtil.logMessage(TAG, "User (" + user + ") wants to save data for (" + barcode + ")", getRunEnvironment());
 
                 List<String> data = new ArrayList<>();
                 data.add(barcode);
                 data.add(stringCaneLength);
                 data.add(stringCaneDiameter);
                 data.add(String.valueOf(boolCaneExists));
+                data.add(observationCaneType.getSelectedItem().toString());
 
 
-                DbHelper databaseHelper = new DbHelper(getActivity());
+                DatabaseHelper databaseHelper = new DatabaseHelper(getActivity());
                 databaseHelper.saveCaneData(data);
                 databaseHelper.close();
             } else {
@@ -92,8 +92,6 @@ public class CaneInfoFragment extends BaseFragment {
         registerSaveButton(saveDataOnClickListener);
 
         debugUtil = new DebugUtil();
-        run_environment = getRunEnvironment();
-
         return v;
     }
 
@@ -103,7 +101,7 @@ public class CaneInfoFragment extends BaseFragment {
 
         // Do stuff for this form type
         // like load data from the observation table
-        clearInputs();
+        clearInputs(caneInfoHolder);
         enableInputs(caneInfoHolder);
         enableComponent(observationCaneType);
 
@@ -121,20 +119,8 @@ public class CaneInfoFragment extends BaseFragment {
         populateDataFields(loadCaneObservationsById(identifier.get(0)));
     }
 
-    private void clearInputs() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                observationCaneLength.setText("");
-                observationCaneDiameter.setText("");
-                observationCaneType.setSelection(0);
-                //observationEarlyOrLate.clearCheck();
-                //reset other entries to default
-            }
-        });
-    }
-
-    private void populateDataFields(final List<String[]> _observations) {
+    @Override
+    void populateDataFields(final List<String[]> _observations) {
         if (_observations == null) return;
 
         for (String[] measurement : _observations) {
@@ -155,10 +141,10 @@ public class CaneInfoFragment extends BaseFragment {
 
                 case "7":
                     // Need to implement comment field first
-                    debugUtil.logMessage(TAG, "Comment is (" + measurement[1] + ")", run_environment);
+                    debugUtil.logMessage(TAG, "Comment is (" + measurement[1] + ")", getRunEnvironment());
                     break;
                 default:
-                    debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", run_environment);
+                    debugUtil.logMessage(TAG, "Invalid or out of context ID (" + measurement[0] + ")", getRunEnvironment());
                     break;
             }
         }
