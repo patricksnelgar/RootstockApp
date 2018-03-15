@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="echo.rootstockapp">
+          package="pfr.clonal">
 
 <uses-permission android:name="com.honeywell.decode.permission.DECODE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

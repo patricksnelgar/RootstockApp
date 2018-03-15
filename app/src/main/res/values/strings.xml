@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">Rootstock Data</string>
+    <string name="app_name">Clonal Data</string>
     <string name="username">username</string>
     <string name="env">env</string> 
     <string name="api">api_url</string>
-    <string name="pref_file">echo.rootstockapp.PREFERENCE_FILE</string>
+    <string name="pref_file">pfr.clonal.PREFERENCE_FILE</string>
     <string name="start_date">start_date</string>
     <string name="network_login_success_text">Login successful</string>
     <string name="network_login_fail_text">Error logging in</string>

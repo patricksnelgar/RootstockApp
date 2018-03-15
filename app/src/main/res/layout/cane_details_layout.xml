@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:theme="@style/RootstockTheme.TextInputLayout">
 
-                <echo.rootstockapp.views.MeasurementText
+                <pfr.clonal.views.MeasurementText
                     android:id="@+id/cane_length"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:theme="@style/RootstockTheme.TextInputLayout">
 
-                <echo.rootstockapp.views.MeasurementText
+                <pfr.clonal.views.MeasurementText
                     android:id="@+id/cane_diameter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

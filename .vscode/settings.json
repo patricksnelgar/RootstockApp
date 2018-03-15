@@ -7,5 +7,9 @@
     "com.android.support:support-v4:23.0.0",
     "com.loopj.android:android-async-http:1.4.9",
     "cz.msebera.android:httpclient:4.4.1.2"
+  ],
+
+  "java.classPath": [
+    "C:\\Users\\hrtpxs\\Documents\\Android\\SDK\\platforms\\android-23\\android.jar"
   ]
 }

@@ -16,13 +16,13 @@ APP_BASE_NAME=`basename "$0"`
 MAX_FD="maximum"
 
 warn ( ) {
-    echo "$*"
+    pfr "$*"
 }
 
 die ( ) {
-    echo
-    echo "$*"
-    echo
+    pfr
+    pfr "$*"
+    pfr
     exit 1
 }
 
@@ -126,13 +126,13 @@ if $cygwin ; then
     # Now convert the arguments - kludge to limit ourselves to /bin/sh
     i=0
     for arg in "$@" ; do
-        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
-        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
+        CHECK=`pfr "$arg"|egrep -c "$OURCYGPATTERN" -`
+        CHECK2=`pfr "$arg"|egrep -c "^-"`                                 ### Determine if an option
 
         if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
-            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
+            eval `pfr args$i`=`cygpath --path --ignore --mixed "$arg"`
         else
-            eval `echo args$i`="\"$arg\""
+            eval `pfr args$i`="\"$arg\""
         fi
         i=$((i+1))
     done
